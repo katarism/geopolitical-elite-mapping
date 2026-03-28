@@ -42,6 +42,8 @@ _agent/
 *.log
 /tmp/
 
+Editor/EliteNetworkEditor_PRD.md
+
 # Generated outputs (optional, keep Examples but ignore loose outputs in root)
 # Add specific patterns if you want to keep the root clean
 # *EliteNetwork_Viewer.html
