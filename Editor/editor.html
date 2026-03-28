@@ -201,11 +201,22 @@ textarea.paste-area:focus{border-color:var(--accent)}
 
 /* ── Mobile Layout ── */
 @media (max-width: 767px) {
+  /* Fix: body height must use small viewport (svh) so content stays above Safari's browser navigation bar */
+  body{height:100svh}
+
   /* Show mobile toggle buttons */
   .mob-panel-btn{display:flex;align-items:center;justify-content:center}
   /* Hide desktop brand text to save topbar space */
   .topbar-brand{display:none}
-  .topbar-sep:first-of-type{display:none}
+  /* Hide all separators and non-essential topbar items to make room for mode toggle */
+  .topbar-sep{display:none}
+  .topbar-gear{display:none}
+  .unsaved-dot{display:none!important}
+  .save-time{display:none}
+  /* Fix: prevent mode toggle from being crushed to zero-width by flex algorithm */
+  .mode-toggle{flex-shrink:0}
+  /* Reduce topbar gap to fit all buttons in portrait */
+  #topBar{gap:6px}
   /* Compact mode toggle labels */
   #modeView span:last-child{display:none}
   #modeEdit span:last-child{display:none}
@@ -252,6 +263,9 @@ textarea.paste-area:focus{border-color:var(--accent)}
   /* Canvas fills full width on mobile */
   #mainEditor{position:relative}
   .canvas-wrap{width:100%}
+  /* Fix: push timeline above iOS home indicator */
+  .timeline-bar{bottom:env(safe-area-inset-bottom)}
+  #cy{height:calc(100% - 36px - env(safe-area-inset-bottom))}
 
   /* Canvas hint: shorter and fits mobile width */
   .hint{
