@@ -264,8 +264,13 @@ textarea.paste-area:focus{border-color:var(--accent)}
   #mainEditor{position:relative}
   .canvas-wrap{width:100%}
   /* Fix: push timeline above iOS home indicator */
-  .timeline-bar{bottom:env(safe-area-inset-bottom)}
-  #cy{height:calc(100% - 36px - env(safe-area-inset-bottom))}
+  .timeline-bar{bottom:env(safe-area-inset-bottom);height:40px;padding:0 6px}
+  #cy{height:calc(100% - 40px - env(safe-area-inset-bottom))}
+  /* Timeline: stack label + year vertically for readability */
+  .timeline-label{font-size:8px;margin-right:4px}
+  .timeline-track{height:28px}
+  .timeline-seg{flex-direction:column;font-size:7px;gap:0;line-height:1.2}
+  .seg-range{margin-left:0;font-size:6px}
 
   /* Canvas hint: shorter and fits mobile width */
   .hint{
