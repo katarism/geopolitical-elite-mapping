@@ -1233,7 +1233,10 @@ function buildPathQuery(){
     cy.elements().addClass('dimmed').removeClass('highlighted');
     path.forEach(el=>{
       el.removeClass('dimmed').addClass('highlighted');
-      if(el.isNode())el.style({'background-color':'#ffffff','border-color':'#facc15','border-width':3});
+      if(el.isNode()){
+        el.style({'background-color':'#ffffff','border-color':'#facc15','border-width':3});
+        const p=el.parent();if(p.length)p.removeClass('dimmed').addClass('highlighted');
+      }
       if(el.isEdge()){
         const lbl=edgeLabelFlat(el.data('label'));
         el.style({
