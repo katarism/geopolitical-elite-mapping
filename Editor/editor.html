@@ -183,6 +183,68 @@ textarea.paste-area:focus{border-color:var(--accent)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.t-ok{border-color:rgba(34,197,94,0.4);color:#86efac}
 .toast.t-err{border-color:rgba(239,68,68,0.4);color:#fca5a5}
+
+/* ── Mobile Toggle Buttons (hidden on desktop) ── */
+.mob-panel-btn{display:none;padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text-dim);cursor:pointer;font-size:13px;transition:all .15s;flex-shrink:0}
+.mob-panel-btn:hover,.mob-panel-btn.active{border-color:var(--accent);color:var(--accent)}
+/* Backdrop for mobile drawers */
+.mob-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:490;touch-action:none}
+.mob-backdrop.show{display:block}
+
+/* ── Mobile Layout ── */
+@media (max-width: 767px) {
+  /* Show mobile toggle buttons */
+  .mob-panel-btn{display:flex;align-items:center;justify-content:center}
+  /* Hide desktop brand text to save topbar space */
+  .topbar-brand{display:none}
+  .topbar-sep:first-of-type{display:none}
+  /* Compact mode toggle labels */
+  #modeView span:last-child{display:none}
+  #modeEdit span:last-child{display:none}
+
+  /* Left panel → fixed slide-in drawer from left */
+  .panel-left{
+    position:fixed;
+    left:0;top:36px;bottom:0;
+    z-index:500;
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    width:220px;
+    box-shadow:4px 0 24px rgba(0,0,0,0.6);
+  }
+  .panel-left.mob-open{transform:translateX(0)}
+
+  /* Right panel → fixed slide-in drawer from right */
+  .panel-right{
+    position:fixed;
+    right:0;top:36px;bottom:0;
+    z-index:500;
+    transform:translateX(100%);
+    transition:transform .25s ease;
+    width:260px;
+    box-shadow:-4px 0 24px rgba(0,0,0,0.6);
+  }
+  .panel-right.mob-open{transform:translateX(0)}
+
+  /* Canvas fills full width on mobile */
+  #mainEditor{position:relative}
+  .canvas-wrap{width:100%}
+
+  /* Canvas hint: shorter and fits mobile width */
+  .hint{
+    font-size:9px;
+    max-width:calc(100vw - 70px);
+    white-space:normal;
+    line-height:1.5;
+    padding:4px 8px;
+  }
+
+  /* Zoom controls: smaller on mobile */
+  .zoom-btn{width:36px;height:36px}
+
+  /* Toast: avoid overlap with browser nav bar */
+  .toast{bottom:72px}
+}
 </style>
 </head>
 <body>
@@ -281,8 +343,12 @@ textarea.paste-area:focus{border-color:var(--accent)}
   </div>
 </div>
 
+<!-- Mobile backdrop -->
+<div class="mob-backdrop" id="mobBackdrop" onclick="closeMobPanels()"></div>
+
 <!-- Top Bar -->
 <div id="topBar" style="display:none">
+  <button class="mob-panel-btn" id="mobLeftBtn" onclick="toggleMobPanel('left')" title="切换筛选面板">☰</button>
   <span class="topbar-brand">Elite Network Editor</span>
   <div class="topbar-sep"></div>
   <button class="topbar-case" onclick="openSettingsModal()">
@@ -295,11 +361,12 @@ textarea.paste-area:focus{border-color:var(--accent)}
   <span class="save-time" id="saveTime"></span>
   <div class="topbar-sep"></div>
   <div class="mode-toggle">
-    <button class="mode-btn active" id="modeView" onclick="setMode('view')">👁 浏览</button>
-    <button class="mode-btn" id="modeEdit" onclick="setMode('edit')">✏️ 编辑</button>
+    <button class="mode-btn active" id="modeView" onclick="setMode('view')"><span>👁</span><span> 浏览</span></button>
+    <button class="mode-btn" id="modeEdit" onclick="setMode('edit')"><span>✏️</span><span> 编辑</span></button>
   </div>
   <div class="topbar-sep"></div>
   <button class="topbar-save" id="saveBtn" onclick="saveData()" disabled>💾 保存</button>
+  <button class="mob-panel-btn" id="mobRightBtn" onclick="toggleMobPanel('right')" title="节点详情">📋</button>
   <button class="topbar-gear" onclick="openSettingsModal()">⚙️</button>
 </div>
 
@@ -342,6 +409,7 @@ textarea.paste-area:focus{border-color:var(--accent)}
   <div class="canvas-wrap" id="canvasWrap">
     <div id="cy"></div>
     <div class="hint" id="canvasHint">🖱 点击节点高亮邻居 · 悬停边查看详情 · 滚轮缩放</div>
+    <div class="hint" id="canvasHintMob" style="display:none">👆 点击节点查看详情 · 双指缩放</div>
     <div class="zoom-ctrl">
       <button class="zoom-btn" id="zoomIn" title="放大">+</button>
       <button class="zoom-btn" id="zoomOut" title="缩小">−</button>
@@ -951,6 +1019,8 @@ function showDetail(d){
   if(d.isGroup)return;
   _selectedNodeData=d;
   document.getElementById('expNodeDetail').classList.remove('disabled');
+  // On mobile, auto-open the right panel to show details
+  if(window._mobAutoOpenRight) window._mobAutoOpenRight();
   const panel=document.getElementById('detailPanel');
   panel.textContent='';
   const content=mk('div',{cls:'detail-content'});
@@ -1869,6 +1939,87 @@ window.m2DeleteEdge=function(ele){
 };
 
 // Pick mode logic removed in favor of robust modal dropdown.
+
+// ── Mobile Panel Drawers ──────────────────────────────
+function isMobile(){ return window.innerWidth < 768; }
+
+function toggleMobPanel(side){
+  if(!isMobile()) return;
+  const left=document.getElementById('panelLeft');
+  const right=document.getElementById('panelRight');
+  const backdrop=document.getElementById('mobBackdrop');
+  const leftBtn=document.getElementById('mobLeftBtn');
+  const rightBtn=document.getElementById('mobRightBtn');
+
+  if(side==='left'){
+    const opening=!left.classList.contains('mob-open');
+    closeMobPanels();
+    if(opening){
+      left.classList.add('mob-open');
+      backdrop.classList.add('show');
+      if(leftBtn) leftBtn.classList.add('active');
+    }
+  } else {
+    const opening=!right.classList.contains('mob-open');
+    closeMobPanels();
+    if(opening){
+      right.classList.add('mob-open');
+      backdrop.classList.add('show');
+      if(rightBtn) rightBtn.classList.add('active');
+    }
+  }
+}
+
+function closeMobPanels(){
+  const left=document.getElementById('panelLeft');
+  const right=document.getElementById('panelRight');
+  const backdrop=document.getElementById('mobBackdrop');
+  const leftBtn=document.getElementById('mobLeftBtn');
+  const rightBtn=document.getElementById('mobRightBtn');
+  if(left) left.classList.remove('mob-open');
+  if(right) right.classList.remove('mob-open');
+  if(backdrop) backdrop.classList.remove('show');
+  if(leftBtn) leftBtn.classList.remove('active');
+  if(rightBtn) rightBtn.classList.remove('active');
+}
+
+// Switch hint text based on device type
+function updateCanvasHint(){
+  const desktop=document.getElementById('canvasHint');
+  const mob=document.getElementById('canvasHintMob');
+  if(!desktop||!mob) return;
+  if(isMobile()){
+    desktop.style.display='none';
+    mob.style.display='block';
+  } else {
+    desktop.style.display='block';
+    mob.style.display='none';
+  }
+}
+
+// On mobile, auto-open right panel after a node is clicked to show details
+const _origOpenRightPanel = window._openRightPanel;
+window._mobAutoOpenRight = function(){
+  if(isMobile()){
+    const right=document.getElementById('panelRight');
+    const backdrop=document.getElementById('mobBackdrop');
+    const rightBtn=document.getElementById('mobRightBtn');
+    if(right && !right.classList.contains('mob-open')){
+      closeMobPanels();
+      right.classList.add('mob-open');
+      if(backdrop) backdrop.classList.add('show');
+      if(rightBtn) rightBtn.classList.add('active');
+    }
+  }
+};
+
+window.addEventListener('resize', function(){
+  if(!isMobile()) closeMobPanels();
+  updateCanvasHint();
+});
+window.addEventListener('DOMContentLoaded', updateCanvasHint);
+// Also run immediately in case DOM is already ready
+if(document.readyState!=='loading') updateCanvasHint();
 
 })();
 </script>
