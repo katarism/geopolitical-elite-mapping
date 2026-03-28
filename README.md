@@ -1,14 +1,18 @@
-# 地缘政治精英网络图谱工具 (Geopolitical Elite Mapping)
+# 地缘政治关键团体网络图谱工具 (Geopolitical Key Actors Network Mapping)
 
 > 🟢 **[2026-03-28 更新] 🚀 重磅功能：可视化编辑器与 AI 辅助生成流程已完善！**
 
-这是一个专为研究人员设计的地缘政治关系制图包。它结合了 **AI 自动化建模** 与 **手动可视化微调**，帮助您在复杂的精英人物、组织及其背后的利益纽带中识破权力网络。
+这是一个帮助您看懂地缘政治权力网络的脉络绘制器。它结合了 **AI 自动化建模** 与 **手动可视化微调**，帮助您在复杂的地缘政治组织及其背后的利益纽带中识破权力的形成逻辑。
 
 ---
 
 ## 🤖 方式一：AI 自动化建模 (Agentic Workflow)
 
 这是基于本项目内置的 `SKILL.md` 实现的端到端生成流程。推荐使用 **Cursor** 或 **Gravity** 等 AI IDE 配合完成。
+
+#### 成果示例
+- **[中东石油地缘政治精英网络在线交互演示 (Live Demo)](https://katarism.github.io/geopolitical-elite-mapping/Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Viewer.html)**
+- **[中东石油地缘政治精英网络深度分析报告 (Analysis Report)](https://github.com/katarism/geopolitical-elite-mapping/blob/main/Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md)**
 
 ### 🚀 如何生成您的第一张图谱？
 
