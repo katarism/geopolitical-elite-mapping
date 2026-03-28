@@ -108,6 +108,18 @@
             font-size: 0.85rem;
             color: var(--text-dim);
         }
+        @media(max-width: 600px) {
+            body { padding: 12px; }
+            .container { padding: 24px 16px; border-radius: 12px; }
+            h1 { font-size: 1.6rem; }
+            p.subtitle { font-size: 0.95rem; margin-bottom: 1.2rem; }
+            .features { grid-template-columns: 1fr; gap: 12px; margin-bottom: 1.2rem; }
+            .feature-item { padding: 12px; }
+            .feature-item h3 { font-size: 0.8rem; }
+            .feature-item p { font-size: 0.8rem; }
+            .button-group { flex-direction: column; gap: 10px; }
+            .btn { padding: 12px 20px; font-size: 0.9rem; width: 100%; text-align: center; }
+        }
     </style>
 </head>
 <body>
