@@ -1004,6 +1004,20 @@ function showDetail(d){
       item.appendChild(arrowEl);
       item.appendChild(document.createTextNode(otherLbl+' · '+(eText||'')+' '));
       item.appendChild(cb);
+      
+      // Make relation item clickable to edit the edge
+      item.style.cursor = 'pointer';
+      item.title = '点击编辑此连线';
+      item.addEventListener('click', () => {
+        if(window.editorState && window.editorState.mode === 'edit' && typeof window.m2EditEdge === 'function') {
+          window.m2EditEdge(e);
+        } else {
+          window.editorState.showToast('请在此面板右上方切换至 ✏️ 编辑模式以修改连线', 'warn');
+        }
+      });
+      item.addEventListener('mouseover', () => { item.style.backgroundColor = 'var(--hover)'; });
+      item.addEventListener('mouseout', () => { item.style.backgroundColor = 'transparent'; });
+      
       return item;
     }
 
@@ -1411,7 +1425,7 @@ window.m3ApplySuspectedStyle=applySuspectedStyle;
 .m2c-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .m2c-msg{font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;white-space:pre-line}
 .m2c-btns{display:flex;gap:8px;justify-content:flex-end}
-body.edge-pick #cy{cursor:crosshair!important}
+body.edge-pick, body.edge-pick #cy {cursor:crosshair!important}
 body.edge-pick .canvas-wrap::after{content:'点击目标节点创建连线 (Esc 取消)';position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,.88);color:#fff;padding:5px 14px;border-radius:20px;font-size:10px;pointer-events:none;z-index:100;white-space:nowrap}
 </style>
 
