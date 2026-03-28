@@ -276,6 +276,9 @@ textarea.paste-area:focus{border-color:var(--accent)}
     padding:4px 8px;
   }
 
+  /* Fix: iOS Safari auto-zooms any input with font-size < 16px on focus */
+  .path-input{font-size:16px}
+
   /* Zoom controls: larger touch targets on mobile */
   .zoom-btn{width:40px;height:40px;font-size:18px}
 
@@ -1231,7 +1234,17 @@ function buildPathQuery(){
     path.forEach(el=>{
       el.removeClass('dimmed').addClass('highlighted');
       if(el.isNode())el.style({'background-color':'#ffffff','border-color':'#facc15','border-width':3});
-      if(el.isEdge())el.style({'line-color':'#facc15','target-arrow-color':'#facc15','width':3});
+      if(el.isEdge()){
+        const lbl=edgeLabelFlat(el.data('label'));
+        el.style({
+          'line-color':'#facc15','target-arrow-color':'#facc15','width':3,
+          'label':lbl.length>28?lbl.substring(0,28)+'…':lbl,
+          'font-size':'8px','color':'#facc15','font-family':'Inter,Segoe UI,system-ui,sans-serif',
+          'text-rotation':'autorotate',
+          'text-background-color':'#0f1117','text-background-opacity':0.9,'text-background-padding':'2px',
+          'z-index':1000
+        });
+      }
     });
     /* Show path in detail panel */
     const panel=document.getElementById('detailPanel');panel.textContent='';
