@@ -224,6 +224,26 @@ EDGES = [
 ]
 
 # ──────────────────────────────────────────
+# 阵营分组数据 (供 HTML Viewer 复合节点使用)
+# ──────────────────────────────────────────
+GROUPS = [
+    {"id": "grp_gulf",     "label": "🛢️ 海湾产油轴（沙特主导）",    "color": "#1A3A5C", "bg": "#EBF5FB",
+     "members": ["SA_MBS","SA_ARAMCO","UAE_MBZ","QA_FUND","KW_GOVT"]},
+    {"id": "grp_iran",     "label": "☪️ 伊朗抵抗轴心（什叶弧）",    "color": "#8B0000", "bg": "#FDEDEC",
+     "members": ["IR_SL","IR_IRGC","HOUTHI","PMF_IQ","HEZBOLLAH"]},
+    {"id": "grp_powers",   "label": "🌍 大国外部介入（美/俄/中）",  "color": "#2E5E3F", "bg": "#EAF7EF",
+     "members": ["US_SHALE","US_CENTCOM","RU_KREMLIN","CN_NOC"]},
+    {"id": "grp_choke",    "label": "🚢 战略咽喉节点",             "color": "#1A5C5C", "bg": "#EAF7F7",
+     "members": ["HORMUZ","BAB_MAND","SUEZ","BTC_PIPE"]},
+    {"id": "grp_multi",    "label": "⚖️ 多边机制",                 "color": "#2E5E3F", "bg": "#F0FFF0",
+     "members": ["OPEC_PLUS","IEA"]},
+    {"id": "grp_periph",   "label": "🔷 区域外围玩家",             "color": "#444488", "bg": "#F5F5FF",
+     "members": ["IL_GOVT","TR_ERDOGAN","LY_CHAOS","NG_GOVT","MAJORS_W"]},
+    {"id": "grp_ideology", "label": "📜 意识形态 / 历史背景层",     "color": "#8B7355", "bg": "#FAFAF0",
+     "members": ["WAHHABISM","SHIA_CRES","OPEC_1973","ARAMCO_HIST"]},
+]
+
+# ──────────────────────────────────────────
 # 主图构建
 # ──────────────────────────────────────────
 dot = graphviz.Digraph(
@@ -438,9 +458,84 @@ with dot.subgraph(name="cluster_legend") as leg:
              dir="forward", constraint="false")
 
 # ──────────────────────────────────────────
+# export_html() — 生成交互式 HTML 查看器
+# ──────────────────────────────────────────
+
+import json
+import os
+
+def export_html(output_base, title, nodes, edges, colors, groups):
+    """
+    将图谱数据注入 viewer_template.html，输出独立 HTML 文件。
+    Cytoscape.js 库从本地 cytoscape.min.js 内联进 HTML，
+    确保完全离线可用。
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(script_dir, "viewer_template.html")
+    cytoscape_path = os.path.join(script_dir, "cytoscape.min.js")
+
+    # ── 读取模板 ──
+    if not os.path.exists(template_path):
+        print(f"⚠️  未找到 viewer_template.html，跳过 HTML 生成")
+        return
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+
+    # ── 读取 Cytoscape.js 库（内联） ──
+    if not os.path.exists(cytoscape_path):
+        print(f"⚠️  未找到 cytoscape.min.js，尝试下载...")
+        import urllib.request
+        url = "https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"
+        try:
+            urllib.request.urlretrieve(url, cytoscape_path)
+            print(f"✅ 已下载 cytoscape.min.js")
+        except Exception as e:
+            print(f"❌ 下载失败: {e}。请手动放置 cytoscape.min.js 到脚本目录。")
+            return
+    with open(cytoscape_path, "r", encoding="utf-8") as f:
+        cytoscape_js = f.read()
+
+    # ── 序列化数据 ──
+    nodes_json = json.dumps(
+        [{"id": n[0], "label": n[1], "type": n[2], "confidence": n[3], "note": n[4]}
+         for n in nodes],
+        ensure_ascii=False, indent=None
+    )
+    edges_json = json.dumps(
+        [{"source": e[0], "target": e[1], "label": e[2], "confidence": e[3]}
+         for e in edges],
+        ensure_ascii=False, indent=None
+    )
+    colors_json = json.dumps(colors, ensure_ascii=False, indent=None)
+    groups_json = json.dumps(groups, ensure_ascii=False, indent=None)
+
+    # ── 替换占位符 ──
+    html = template
+    html = html.replace("{{TITLE}}", title)
+    html = html.replace("{{CYTOSCAPE_JS}}", cytoscape_js)
+    html = html.replace("{{NODES_JSON}}", nodes_json)
+    html = html.replace("{{EDGES_JSON}}", edges_json)
+    html = html.replace("{{COLORS_JSON}}", colors_json)
+    html = html.replace("{{GROUPS_JSON}}", groups_json)
+
+    # ── 写入文件 ──
+    html_path = f"{output_base}_Viewer.html"
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"✅ HTML 已生成: {html_path}")
+
+
+# ──────────────────────────────────────────
 # 渲染输出
 # ──────────────────────────────────────────
-output_path = "MiddleEastOil_EliteNetwork"
-dot.render(output_path, cleanup=True)
-print(f"✅ SVG 已生成: {output_path}.svg")
-print(f"📊 节点数: {len(NODES)}, 边数: {len(EDGES)}")
+if __name__ == "__main__":
+    output_path = "MiddleEastOil_EliteNetwork"
+
+    # 1. SVG 图谱（原有）
+    dot.render(output_path, cleanup=True)
+    print(f"✅ SVG 已生成: {output_path}.svg")
+    print(f"📊 节点数: {len(NODES)}, 边数: {len(EDGES)}")
+
+    # 2. 交互式 HTML 查看器（新增）
+    graph_title = "中东石油地缘政治精英网络图谱 (1973-2026)"
+    export_html(output_path, graph_title, NODES, EDGES, COLORS, GROUPS)

@@ -305,6 +305,7 @@ description: "地缘政治精英网络图谱工具。适用于分析特定议题
 8. **布局验证** — 生成 SVG 后按 [调试 checklist](references/visual_spec.md#6-调试-checklist) 检查
 
 **Phase 4 交付物**：SVG 矢量图谱 + 生成脚本。
+3. `[Topic]_EliteNetwork_Viewer.html` — 交互查看器（由 `export_html()` 自动生成）
 
 ---
 

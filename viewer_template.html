@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1117;--panel:#181b25;--border:#2a2e3a;--text:#e0e0e0;
+  --text-dim:#8a8fa0;--accent:#3b82f6;--hover:#252838;
+}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
+
+/* ── Left Panel ── */
+.panel-left{width:185px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.panel-left h3{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);padding:14px 12px 6px;border-bottom:1px solid var(--border)}
+.filter-group{padding:6px 12px}
+.filter-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;user-select:none}
+.filter-item input[type="checkbox"]{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.color-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.filter-item label{cursor:pointer;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+select{width:100%;background:#1e2130;color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:11px;margin:4px 0;cursor:pointer;outline:none}
+select:focus{border-color:var(--accent)}
+.brand{padding:12px;border-bottom:1px solid var(--border);text-align:center}
+.brand h2{font-size:12px;font-weight:600;color:var(--accent);letter-spacing:0.5px}
+.brand p{font-size:9px;color:var(--text-dim);margin-top:2px}
+
+/* ── Canvas ── */
+.canvas-wrap{flex:1;position:relative;background:#0d0f15}
+#cy{width:100%;height:100%}
+.hint{position:absolute;top:10px;left:10px;font-size:10px;color:var(--text-dim);pointer-events:none;line-height:1.6;background:rgba(15,17,23,0.85);padding:6px 10px;border-radius:4px;border:1px solid var(--border)}
+.zoom-ctrl{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px}
+.zoom-btn{width:32px;height:32px;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.zoom-btn:hover{background:var(--hover)}
+
+/* ── Right Panel ── */
+.panel-right{width:185px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.panel-right h3{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);padding:14px 12px 6px;border-bottom:1px solid var(--border)}
+.detail-empty{padding:14px 12px;font-size:11px;color:var(--text-dim);line-height:1.6}
+.detail-content{padding:10px 12px;font-size:11px;line-height:1.65}
+.detail-content .dl{font-weight:600;color:var(--accent);margin-top:8px;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px}
+.detail-content .dv{color:var(--text);word-break:break-all}
+.conf-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.5px}
+.conf-HIGH{background:#1a3a1a;color:#4ade80}.conf-MED{background:#1a2a4a;color:#60a5fa}
+.conf-LOW{background:#3a3a1a;color:#facc15}.conf-INFERRED{background:#2a1a1a;color:#f87171}
+.rel-list{margin-top:6px}
+.rel-item{padding:4px 0;border-bottom:1px solid var(--border);font-size:10px;line-height:1.5}
+.rel-arrow{color:var(--accent);font-weight:700}
+.rel-conf{float:right}
+
+/* ── Tooltip ── */
+.edge-tooltip{position:absolute;pointer-events:none;background:rgba(24,27,37,0.96);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6;color:var(--text);z-index:999;max-width:260px;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:none}
+.edge-tooltip .et-label{font-weight:600;color:var(--accent)}
+</style>
+<!-- Cytoscape.js (inlined for offline use) -->
+<script>
+{{CYTOSCAPE_JS}}
+</script>
+</head>
+<body>
+
+<!-- Left Panel -->
+<div class="panel-left">
+  <div class="brand"><h2>Elite Network Viewer</h2><p>geopolitical-elite-mapping</p></div>
+  <h3>🔷 节点类型</h3>
+  <div class="filter-group" id="typeFilters"></div>
+  <h3>🎯 置信度</h3>
+  <div class="filter-group" id="confFilters"></div>
+  <h3>📐 布局</h3>
+  <div class="filter-group">
+    <select id="layoutSelect">
+      <option value="cose">力导向 (cose)</option>
+      <option value="circle">环形 (circle)</option>
+      <option value="breadthfirst">层次 (breadthfirst)</option>
+      <option value="grid">网格 (grid)</option>
+    </select>
+  </div>
+</div>
+
+<!-- Canvas -->
+<div class="canvas-wrap">
+  <div id="cy"></div>
+  <div class="hint">🖱 点击节点高亮邻居 · 悬停边查看详情 · 滚轮缩放 · 拖拽平移</div>
+  <div class="zoom-ctrl">
+    <button class="zoom-btn" id="zoomIn" title="放大">+</button>
+    <button class="zoom-btn" id="zoomOut" title="缩小">−</button>
+    <button class="zoom-btn" id="zoomFit" title="适应画布">⌂</button>
+  </div>
+  <div class="edge-tooltip" id="edgeTooltip"></div>
+</div>
+
+<!-- Right Panel -->
+<div class="panel-right">
+  <h3>📋 节点详情</h3>
+  <div id="detailPanel"><div class="detail-empty">点击节点查看详情</div></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ── Data ── */
+const NODES = {{NODES_JSON}};
+const EDGES = {{EDGES_JSON}};
+const COLORS = {{COLORS_JSON}};
+const GROUPS = {{GROUPS_JSON}};
+
+const CONF_EDGE = {
+  HIGH:     {color:"#cc2222", width:2.5, style:"solid"},
+  MED:      {color:"#1a5296", width:1.5, style:"solid"},
+  LOW:      {color:"#888888", width:1,   style:"dashed"},
+  INFERRED: {color:"#aaaaaa", width:0.7, style:"dotted"}
+};
+
+const TYPE_LABELS = {
+  state_elite:"国家精英派系", militia_proxy:"代理武装", intl_org:"多边机制",
+  corp_national:"国家石油企业", corp_western:"西方油企", chokepoint:"战略通道",
+  ideology:"意识形态/历史", timeline:"时间轴"
+};
+
+/* ── Build member→group lookup ── */
+const memberToGroup = {};
+GROUPS.forEach(g => {
+  g.members.forEach(m => { memberToGroup[m] = g.id; });
+});
+
+/* ── Build Cytoscape elements ── */
+const elements = [];
+
+/* Parent (compound) nodes for each group */
+GROUPS.forEach(g => {
+  elements.push({data:{id:g.id, label:g.label, isGroup:true, groupColor:g.color, groupBg:g.bg}});
+});
+
+/* Child nodes — assigned to parent group */
+NODES.forEach(n => {
+  const parent = memberToGroup[n.id] || undefined;
+  elements.push({data:{
+    id:n.id, label:n.label.replace(/\\n/g,"\n"), type:n.type,
+    confidence:n.confidence, note:n.note, parent:parent
+  }});
+});
+
+/* Edges */
+EDGES.forEach((e,i) => {
+  elements.push({data:{id:"e"+i, source:e.source, target:e.target, label:e.label.replace(/\\n/g," "), confidence:e.confidence}});
+});
+
+/* ── Node style function ── */
+function nodeShape(t){return (t==="chokepoint"||t==="ideology")?"ellipse":"roundrectangle"}
+function nodeBorderWidth(c){return {HIGH:2.5,MED:1.5,LOW:1,INFERRED:0.7}[c]||1.5}
+function nodeBorderStyle(c,t){
+  if(t==="ideology") return "dashed";
+  return {HIGH:"solid",MED:"solid",LOW:"dashed",INFERRED:"dotted"}[c]||"solid";
+}
+function nodeColor(t){return COLORS[t]||"#333333"}
+
+/* ── Init Cytoscape ── */
+const cy = cytoscape({
+  container: document.getElementById("cy"),
+  elements: elements,
+  style: [
+    /* Compound parent node (group box) */
+    {selector:"node[?isGroup]", style:{
+      "label":"data(label)",
+      "text-valign":"top", "text-halign":"center",
+      "text-margin-y": -6,
+      "font-size":"10px", "font-weight":"bold",
+      "font-family":"Inter, Segoe UI, system-ui, sans-serif",
+      "color": function(ele){return ele.data("groupColor")},
+      "background-color": function(ele){return ele.data("groupBg")},
+      "background-opacity": 0.15,
+      "border-width": 1.5,
+      "border-style":"solid",
+      "border-color": function(ele){return ele.data("groupColor")},
+      "border-opacity": 0.6,
+      "shape":"roundrectangle",
+      "padding":"12px",
+      "text-outline-width":0,
+      "compound-sizing-wrt-labels":"include",
+      "min-width":"120px", "min-height":"60px"
+    }},
+    /* Regular child nodes */
+    {selector:"node[!isGroup]", style:{
+      "label":"data(label)", "text-wrap":"wrap", "text-max-width":"120px",
+      "font-size":"9px", "font-family":"Inter, Segoe UI, system-ui, sans-serif",
+      "color":"#fff", "text-valign":"center", "text-halign":"center",
+      "text-outline-width":0,
+      "width":"label", "height":"label", "padding":"10px",
+      "shape": function(ele){return nodeShape(ele.data("type"))},
+      "background-color": function(ele){return nodeColor(ele.data("type"))},
+      "border-width": function(ele){return nodeBorderWidth(ele.data("confidence"))},
+      "border-style": function(ele){return nodeBorderStyle(ele.data("confidence"), ele.data("type"))},
+      "border-color":"#000",
+      "transition-property":"opacity", "transition-duration":"200ms"
+    }},
+    {selector:"edge", style:{
+      "curve-style":"bezier", "target-arrow-shape":"triangle",
+      "arrow-scale":0.8,
+      "line-color": function(ele){return (CONF_EDGE[ele.data("confidence")]||CONF_EDGE.MED).color},
+      "target-arrow-color": function(ele){return (CONF_EDGE[ele.data("confidence")]||CONF_EDGE.MED).color},
+      "width": function(ele){return (CONF_EDGE[ele.data("confidence")]||CONF_EDGE.MED).width},
+      "line-style": function(ele){return (CONF_EDGE[ele.data("confidence")]||CONF_EDGE.MED).style},
+      "opacity":0.75,
+      "transition-property":"opacity", "transition-duration":"200ms"
+    }},
+    {selector:".dimmed", style:{"opacity":0.08}},
+    {selector:".highlighted", style:{"opacity":1}},
+    {selector:"node.highlighted[!isGroup]", style:{"border-color":"#f59e0b","border-width":3.5}},
+    {selector:"edge.highlighted", style:{"opacity":1,"z-index":999}}
+  ],
+  layout:{name:"cose", animate:true, animationDuration:800,
+    nodeRepulsion:function(){return 6000}, idealEdgeLength:function(){return 80},
+    gravity:0.8, nestingFactor:1.2, padding:30, nodeOverlap:20,
+    numIter:2000, initialTemp:300},
+  minZoom:0.1, maxZoom:5, wheelSensitivity:0.25
+});
+
+/* ── Highlight on click (child nodes only) ── */
+let highlighted = false;
+cy.on("tap","node[!isGroup]", function(evt){
+  const node = evt.target;
+  if(highlighted && node.hasClass("highlighted")){
+    cy.elements().removeClass("dimmed highlighted");
+    highlighted = false;
+  } else {
+    cy.elements().removeClass("highlighted").addClass("dimmed");
+    /* Highlight node + neighbors + their parent groups */
+    const neighborhood = node.neighborhood().add(node);
+    neighborhood.removeClass("dimmed").addClass("highlighted");
+    /* Also highlight parent compound nodes of highlighted children */
+    neighborhood.nodes().forEach(n => {
+      const p = n.parent();
+      if(p.length) p.removeClass("dimmed").addClass("highlighted");
+    });
+    highlighted = true;
+  }
+  showDetail(node.data());
+});
+cy.on("tap", function(evt){
+  if(evt.target === cy){
+    cy.elements().removeClass("dimmed highlighted");
+    highlighted = false;
+  }
+});
+
+/* ── Edge tooltip ── */
+const tooltip = document.getElementById("edgeTooltip");
+cy.on("mouseover","edge", function(evt){
+  const d = evt.target.data();
+  const confBadge = '<span class="conf-badge conf-'+d.confidence+'">'+d.confidence+'</span>';
+  tooltip.innerHTML = '<div class="et-label">'+d.label+'</div><div>'+
+    d.source+' → '+d.target+'</div><div>置信度: '+confBadge+'</div>';
+  tooltip.style.display = "block";
+});
+cy.on("mousemove","edge", function(evt){
+  const p = evt.renderedPosition || evt.position;
+  tooltip.style.left = (p.x + 15)+"px";
+  tooltip.style.top = (p.y + 15)+"px";
+});
+cy.on("mouseout","edge", function(){tooltip.style.display = "none"});
+
+/* ── Right panel detail ── */
+function showDetail(d){
+  if(d.isGroup) return; /* Don't show details for group nodes */
+  const panel = document.getElementById("detailPanel");
+  const confBadge = '<span class="conf-badge conf-'+d.confidence+'">'+d.confidence+'</span>';
+  let html = '<div class="detail-content">';
+  html += '<div class="dl">名称</div><div class="dv">'+(d.label||"").replace(/\n/g,"<br>")+'</div>';
+  html += '<div class="dl">类型</div><div class="dv">'+(TYPE_LABELS[d.type]||d.type)+'</div>';
+  html += '<div class="dl">置信度</div><div class="dv">'+confBadge+'</div>';
+  /* Show group membership */
+  if(d.parent){
+    const grp = GROUPS.find(g=>g.id===d.parent);
+    if(grp) html += '<div class="dl">阵营</div><div class="dv">'+grp.label+'</div>';
+  }
+  if(d.note){html += '<div class="dl">备注</div><div class="dv">'+d.note+'</div>';}
+  /* Connected edges */
+  const node = cy.getElementById(d.id);
+  const edges = node.connectedEdges();
+  if(edges.length>0){
+    html += '<div class="dl">关系 ('+edges.length+')</div><div class="rel-list">';
+    edges.forEach(e=>{
+      const ed = e.data();
+      const otherId = ed.source===d.id ? ed.target : ed.source;
+      const otherLabel = cy.getElementById(otherId).data("label") || otherId;
+      const arrow = ed.source===d.id ? "→" : "←";
+      const cb = '<span class="conf-badge conf-'+ed.confidence+' rel-conf">'+ed.confidence+'</span>';
+      html += '<div class="rel-item"><span class="rel-arrow">'+arrow+'</span> '+otherLabel.replace(/\n/g," ")+' · '+ed.label+' '+cb+'</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+/* ── Zoom controls ── */
+document.getElementById("zoomIn").onclick = ()=> cy.zoom({level:cy.zoom()*1.3, renderedPosition:{x:cy.width()/2,y:cy.height()/2}});
+document.getElementById("zoomOut").onclick = ()=> cy.zoom({level:cy.zoom()/1.3, renderedPosition:{x:cy.width()/2,y:cy.height()/2}});
+document.getElementById("zoomFit").onclick = ()=> cy.fit(undefined, 30);
+
+/* ── Layout switcher ── */
+document.getElementById("layoutSelect").onchange = function(){
+  const name = this.value;
+  const opts = {name, animate:true, animationDuration:500, padding:40};
+  if(name==="cose"){opts.nodeRepulsion=function(){return 6000};opts.idealEdgeLength=function(){return 80};opts.gravity=0.8;opts.nestingFactor=1.2;opts.numIter=2000;opts.initialTemp=300}
+  if(name==="breadthfirst"){opts.directed=true;opts.spacingFactor=1.2}
+  cy.layout(opts).run();
+};
+
+/* ── Type filters ── */
+const typeContainer = document.getElementById("typeFilters");
+const seenTypes = new Set();
+NODES.forEach(n=>seenTypes.add(n.type));
+seenTypes.forEach(t=>{
+  const color = COLORS[t]||"#333";
+  const label = TYPE_LABELS[t]||t;
+  const item = document.createElement("div");
+  item.className = "filter-item";
+  item.innerHTML = '<input type="checkbox" checked data-filter-type="'+t+'" id="ft_'+t+'">' +
+    '<span class="color-dot" style="background:'+color+'"></span>' +
+    '<label for="ft_'+t+'">'+label+'</label>';
+  typeContainer.appendChild(item);
+});
+
+/* ── Confidence filters ── */
+const confContainer = document.getElementById("confFilters");
+["HIGH","MED","LOW","INFERRED"].forEach(c=>{
+  const ce = CONF_EDGE[c];
+  const item = document.createElement("div");
+  item.className = "filter-item";
+  item.innerHTML = '<input type="checkbox" checked data-filter-conf="'+c+'" id="fc_'+c+'">' +
+    '<span class="color-dot" style="background:'+ce.color+'"></span>' +
+    '<label for="fc_'+c+'"><span class="conf-badge conf-'+c+'">'+c+'</span></label>';
+  confContainer.appendChild(item);
+});
+
+/* ── Apply filters ── */
+function applyFilters(){
+  const activeTypes = new Set();
+  document.querySelectorAll("[data-filter-type]").forEach(cb=>{if(cb.checked) activeTypes.add(cb.dataset.filterType)});
+  const activeConfs = new Set();
+  document.querySelectorAll("[data-filter-conf]").forEach(cb=>{if(cb.checked) activeConfs.add(cb.dataset.filterConf)});
+
+  cy.batch(()=>{
+    /* Child nodes: filter by type + confidence */
+    cy.nodes("[!isGroup]").forEach(n=>{
+      const show = activeTypes.has(n.data("type")) && activeConfs.has(n.data("confidence"));
+      if(show){n.style("display","element")} else {n.style("display","none")}
+    });
+    /* Edges: show only if both endpoints visible */
+    cy.edges().forEach(e=>{
+      const src = cy.getElementById(e.data("source"));
+      const tgt = cy.getElementById(e.data("target"));
+      const confOk = activeConfs.has(e.data("confidence"));
+      const show = confOk && src.style("display")!=="none" && tgt.style("display")!=="none";
+      if(show){e.style("display","element")} else {e.style("display","none")}
+    });
+    /* Group nodes: hide if all children hidden */
+    cy.nodes("[?isGroup]").forEach(g=>{
+      const children = g.children();
+      const anyVisible = children.some(c=>c.style("display")!=="none");
+      if(anyVisible){g.style("display","element")} else {g.style("display","none")}
+    });
+  });
+}
+document.querySelectorAll("[data-filter-type],[data-filter-conf]").forEach(cb=>{
+  cb.addEventListener("change", applyFilters);
+});
+
+})();
+</script>
+</body>
+</html>

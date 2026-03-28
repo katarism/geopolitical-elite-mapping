@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中东石油地缘政治精英网络图谱 — 交互查看器</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Segoe UI', 'SF Pro Display', -apple-system, Arial, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  display: flex;
+}
+
+/* ── Left Filter Panel ── */
+#filter-panel {
+  width: 260px;
+  min-width: 260px;
+  background: #161b22;
+  border-right: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 100;
+}
+#filter-panel h2 {
+  font-size: 14px;
+  padding: 16px 16px 8px;
+  color: #58a6ff;
+  border-bottom: 1px solid #21262d;
+}
+#filter-panel h3 {
+  font-size: 12px;
+  padding: 12px 16px 4px;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+#filter-panel label {
+  display: block;
+  padding: 4px 16px 4px 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#filter-panel label:hover { background: #21262d; }
+#filter-panel input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #58a6ff;
+}
+.panel-section {
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 8px;
+}
+#reset-btn {
+  margin: 12px 16px;
+  padding: 8px 16px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#reset-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+/* ── Main SVG Area ── */
+#svg-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  background: #0d1117;
+  background-image:
+    radial-gradient(circle, #21262d 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+#svg-container:active { cursor: grabbing; }
+#svg-container svg {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+/* ── Right Detail Panel ── */
+#detail-panel {
+  width: 300px;
+  min-width: 300px;
+  background: #161b22;
+  border-left: 1px solid #30363d;
+  overflow-y: auto;
+  z-index: 100;
+  transition: opacity 0.3s;
+}
+#detail-panel.empty {
+  opacity: 0.4;
+}
+#detail-header {
+  padding: 16px;
+  border-bottom: 1px solid #21262d;
+}
+#detail-header h2 {
+  font-size: 15px;
+  color: #58a6ff;
+  margin-bottom: 4px;
+}
+#detail-header .subtitle {
+  font-size: 11px;
+  color: #8b949e;
+}
+.detail-field {
+  padding: 10px 16px;
+  border-bottom: 1px solid #21262d;
+}
+.detail-field .field-label {
+  font-size: 11px;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.detail-field .field-value {
+  font-size: 13px;
+  color: #e6edf3;
+  line-height: 1.5;
+}
+.conf-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.conf-HIGH     { background: #1a7f37; color: #aff5b4; }
+.conf-MED      { background: #1a5296; color: #a5d6ff; }
+.conf-LOW      { background: #9a6700; color: #f8e3a1; }
+.conf-INFERRED { background: #656d76; color: #e6edf3; }
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.type-state_elite   { background: #1A3A5C; color: #fff; }
+.type-militia_proxy  { background: #8B0000; color: #fff; }
+.type-intl_org       { background: #2E5E3F; color: #fff; }
+.type-corp_national  { background: #5C4A1A; color: #fff; }
+.type-corp_western   { background: #4A1A5C; color: #fff; }
+.type-chokepoint     { background: #1A5C5C; color: #fff; }
+.type-ideology       { background: #5C5C1A; color: #fff; }
+
+/* ── Connected edges list ── */
+#detail-edges { padding: 10px 16px; }
+#detail-edges h4 {
+  font-size: 12px;
+  color: #8b949e;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.edge-item {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: #21262d;
+  border-radius: 4px;
+  font-size: 12px;
+  border-left: 3px solid #30363d;
+}
+.edge-item.edge-HIGH { border-left-color: #CC2222; }
+.edge-item.edge-MED  { border-left-color: #1A5296; }
+.edge-item.edge-LOW  { border-left-color: #888888; }
+.edge-item.edge-INFERRED { border-left-color: #AAAAAA; }
+.edge-item .edge-target { color: #58a6ff; }
+.edge-item .edge-label  { color: #c9d1d9; }
+
+/* ── SVG Highlight States ── */
+.svg-dimmed { opacity: 0.08 !important; }
+.svg-highlighted { opacity: 1 !important; }
+
+/* ── Edge Tooltip ── */
+#edge-tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: #1c2128;
+  border: 1px solid #444c56;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #e6edf3;
+  max-width: 300px;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+#edge-tooltip .tt-label {
+  font-weight: 600;
+  color: #58a6ff;
+  margin-bottom: 4px;
+}
+#edge-tooltip .tt-conf {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+#edge-tooltip .tt-note {
+  font-size: 11px;
+  color: #8b949e;
+  font-style: italic;
+}
+
+/* ── Zoom Controls ── */
+#zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 200;
+}
+#zoom-controls button {
+  width: 36px;
+  height: 36px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  color: #c9d1d9;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+#zoom-controls button:hover {
+  background: #30363d;
+  color: #58a6ff;
+  border-color: #58a6ff;
+}
+#zoom-level {
+  text-align: center;
+  font-size: 11px;
+  color: #8b949e;
+  padding: 2px 0;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Left Filter Panel ── -->
+<div id="filter-panel">
+  <h2>🌍 精英网络图谱</h2>
+  <div class="panel-section">
+    <h3>节点类型</h3>
+    <label><input type="checkbox" class="filter-type" value="chokepoint" checked> 🚢 战略通道</label>
+<label><input type="checkbox" class="filter-type" value="corp_national" checked> 🛢️ 国家石油企业</label>
+<label><input type="checkbox" class="filter-type" value="corp_western" checked> 🏭 西方油企</label>
+<label><input type="checkbox" class="filter-type" value="ideology" checked> 📜 意识形态/历史</label>
+<label><input type="checkbox" class="filter-type" value="intl_org" checked> 🌐 国际组织</label>
+<label><input type="checkbox" class="filter-type" value="militia_proxy" checked> ⚔️ 代理武装</label>
+<label><input type="checkbox" class="filter-type" value="state_elite" checked> 🏛️ 国家精英派系</label>
+  </div>
+  <div class="panel-section">
+    <h3>置信度</h3>
+    <label><input type="checkbox" class="filter-conf" value="HIGH" checked> 🟢 HIGH（高置信度）</label>
+<label><input type="checkbox" class="filter-conf" value="MED" checked> 🔵 MED（中置信度）</label>
+<label><input type="checkbox" class="filter-conf" value="LOW" checked> 🟡 LOW（低置信度）</label>
+<label><input type="checkbox" class="filter-conf" value="INFERRED" checked> ⚪ INFERRED（推断）</label>
+  </div>
+  <button id="reset-btn">↻ 重置所有筛选</button>
+</div>
+
+<!-- ── Main SVG Area ── -->
+<div id="svg-container">
+  <div id="svg-wrapper">
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.4 (20260321.0153)
+ -->
+<!-- Title: MiddleEastOilEliteNetwork Pages: 1 -->
+<svg width="8150pt" height="1760pt"
+ viewBox="0.00 0.00 8150.00 1760.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(2.08333 2.08333) rotate(0) translate(4 841.01)">
+<title>MiddleEastOilEliteNetwork</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-841.01 3908,-841.01 3908,4 -4,4"/>
+<text xml:space="preserve" text-anchor="middle" x="1952" y="-819.71" font-family="Arial" font-size="14.00">中东石油地缘政治精英网络图谱 (1973&#45;2026)</text>
+<text xml:space="preserve" text-anchor="middle" x="1952" y="-799.46" font-family="Arial" font-size="14.00">Middle East Oil Geopolitical Elite Network | Phase: Faction Level | © 2026</text>
+<g id="clust1" class="cluster">
+<title>cluster_gulf_axis</title>
+<path fill="#ebf5fb" stroke="#1a3a5c" stroke-width="2" d="M998,-264.3C998,-264.3 1660,-264.3 1660,-264.3 1666,-264.3 1672,-270.3 1672,-276.3 1672,-276.3 1672,-491.21 1672,-491.21 1672,-497.21 1666,-503.21 1660,-503.21 1660,-503.21 998,-503.21 998,-503.21 992,-503.21 986,-497.21 986,-491.21 986,-491.21 986,-276.3 986,-276.3 986,-270.3 992,-264.3 998,-264.3"/>
+<text xml:space="preserve" text-anchor="middle" x="1329" y="-485.91" font-family="Arial" font-size="14.00">🛢️ 海湾产油轴（沙特主导）</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_iran_axis</title>
+<path fill="#fdedec" stroke="#8b0000" stroke-width="2" d="M1922,-262.8C1922,-262.8 2404,-262.8 2404,-262.8 2410,-262.8 2416,-268.8 2416,-274.8 2416,-274.8 2416,-632.11 2416,-632.11 2416,-638.11 2410,-644.11 2404,-644.11 2404,-644.11 1922,-644.11 1922,-644.11 1916,-644.11 1910,-638.11 1910,-632.11 1910,-632.11 1910,-274.8 1910,-274.8 1910,-268.8 1916,-262.8 1922,-262.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-626.81" font-family="Arial" font-size="14.00">☪️ 伊朗抵抗轴心（什叶弧）</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_great_powers</title>
+<path fill="#eaf7ef" stroke="#2e5e3f" stroke-width="2" d="M714,-551.35C714,-551.35 1196,-551.35 1196,-551.35 1202,-551.35 1208,-557.35 1208,-563.35 1208,-563.35 1208,-773.01 1208,-773.01 1208,-779.01 1202,-785.01 1196,-785.01 1196,-785.01 714,-785.01 714,-785.01 708,-785.01 702,-779.01 702,-773.01 702,-773.01 702,-563.35 702,-563.35 702,-557.35 708,-551.35 714,-551.35"/>
+<text xml:space="preserve" text-anchor="middle" x="955" y="-767.71" font-family="Arial" font-size="14.00">🌍 大国外部介入（美/俄/中）</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_chokepoints</title>
+<path fill="white" stroke="#1a5c5c" stroke-width="1.5" stroke-dasharray="5,2" d="M1922,-8C1922,-8 2224,-8 2224,-8 2230,-8 2236,-14 2236,-20 2236,-20 2236,-209.41 2236,-209.41 2236,-215.41 2230,-221.41 2224,-221.41 2224,-221.41 1922,-221.41 1922,-221.41 1916,-221.41 1910,-215.41 1910,-209.41 1910,-209.41 1910,-20 1910,-20 1910,-14 1916,-8 1922,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="2073" y="-204.11" font-family="Arial" font-size="14.00">🚢 战略咽喉节点</text>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_multilateral</title>
+<path fill="#f0fff0" stroke="#2e5e3f" stroke-width="1.5" d="M704,-8C704,-8 826,-8 826,-8 832,-8 838,-14 838,-20 838,-20 838,-207.91 838,-207.91 838,-213.91 832,-219.91 826,-219.91 826,-219.91 704,-219.91 704,-219.91 698,-219.91 692,-213.91 692,-207.91 692,-207.91 692,-20 692,-20 692,-14 698,-8 704,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="765" y="-202.61" font-family="Arial" font-size="14.00">⚖️ 多边机制</text>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_periphery</title>
+<path fill="#f5f5ff" stroke="#444488" stroke-width="1.5" d="M20,-405.2C20,-405.2 682,-405.2 682,-405.2 688,-405.2 694,-411.2 694,-417.2 694,-417.2 694,-632.11 694,-632.11 694,-638.11 688,-644.11 682,-644.11 682,-644.11 20,-644.11 20,-644.11 14,-644.11 8,-638.11 8,-632.11 8,-632.11 8,-417.2 8,-417.2 8,-411.2 14,-405.2 20,-405.2"/>
+<text xml:space="preserve" text-anchor="middle" x="351" y="-626.81" font-family="Arial" font-size="14.00">🔷 区域外围玩家</text>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_ideology</title>
+<path fill="white" stroke="#8b7355" stroke-dasharray="5,2" d="M1228,-544.6C1228,-544.6 1890,-544.6 1890,-544.6 1896,-544.6 1902,-550.6 1902,-556.6 1902,-556.6 1902,-632.11 1902,-632.11 1902,-638.11 1896,-644.11 1890,-644.11 1890,-644.11 1228,-644.11 1228,-644.11 1222,-644.11 1216,-638.11 1216,-632.11 1216,-632.11 1216,-556.6 1216,-556.6 1216,-550.6 1222,-544.6 1228,-544.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1559" y="-626.81" font-family="Arial" font-size="14.00">📜 意识形态 / 历史背景层</text>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_legend</title>
+<path fill="#fafafa" stroke="#444444" stroke-width="1.5" d="M2836,-271.05C2836,-271.05 3884,-271.05 3884,-271.05 3890,-271.05 3896,-277.05 3896,-283.05 3896,-283.05 3896,-759.19 3896,-759.19 3896,-765.19 3890,-771.19 3884,-771.19 3884,-771.19 2836,-771.19 2836,-771.19 2830,-771.19 2824,-765.19 2824,-759.19 2824,-759.19 2824,-283.05 2824,-283.05 2824,-277.05 2830,-271.05 2836,-271.05"/>
+<text xml:space="preserve" text-anchor="middle" x="3360" y="-757.69" font-family="Arial" font-size="10.00">📊 图例 Legend</text>
+</g>
+<!-- SA_MBS -->
+<g id="node1" class="node">
+<title>SA_MBS</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="1303.8,-466.6 1174.2,-466.6 1174.2,-411.7 1303.8,-411.7 1303.8,-466.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1239" y="-450.85" font-family="Arial" font-size="9.00" fill="#ffffff">沙特王室</text>
+<text xml:space="preserve" text-anchor="middle" x="1239" y="-437.35" font-family="Arial" font-size="9.00" fill="#ffffff">（MBS派系）</text>
+<text xml:space="preserve" text-anchor="middle" x="1239" y="-423.85" font-family="Arial" font-size="9.00" fill="#ffffff">+ 公共投资基金PIF</text>
+</g>
+<!-- SA_ARAMCO -->
+<g id="node2" class="node">
+<title>SA_ARAMCO</title>
+<polygon fill="#5c4a1a" stroke="#000000" stroke-width="2.5" points="1123.8,-324.2 994.2,-324.2 994.2,-272.3 1123.8,-272.3 1123.8,-324.2"/>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-308.45" font-family="Arial" font-size="9.00" fill="#ffffff">沙特阿拉伯</text>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-294.95" font-family="Arial" font-size="9.00" fill="#ffffff">国家石油公司</text>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-281.45" font-family="Arial" font-size="9.00" fill="#ffffff">Aramco</text>
+</g>
+<!-- SA_MBS&#45;&gt;SA_ARAMCO -->
+<g id="edge9" class="edge">
+<title>SA_MBS&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1239,-410.59C1239,-369.34 1239,-298 1239,-298 1239,-298 1135.79,-298 1135.79,-298"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1135.79,-295.55 1128.79,-298 1135.79,-300.45 1135.79,-295.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1216.5" y="-306.81" font-family="Arial" font-size="7.50" fill="#cc2222">国家完全控制</text>
+</g>
+<!-- IR_SL -->
+<g id="node7" class="node">
+<title>IR_SL</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="2073.8,-607.5 1944.2,-607.5 1944.2,-552.6 2073.8,-552.6 2073.8,-607.5"/>
+<text xml:space="preserve" text-anchor="middle" x="2009" y="-591.75" font-family="Arial" font-size="9.00" fill="#ffffff">伊朗</text>
+<text xml:space="preserve" text-anchor="middle" x="2009" y="-578.25" font-family="Arial" font-size="9.00" fill="#ffffff">最高领袖办公室</text>
+<text xml:space="preserve" text-anchor="middle" x="2009" y="-564.75" font-family="Arial" font-size="9.00" fill="#ffffff">（哈梅内伊体系）</text>
+</g>
+<!-- SA_MBS&#45;&gt;IR_SL -->
+<g id="edge38" class="edge">
+<title>SA_MBS&#45;&gt;IR_SL</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1244.1,-478.54C1244.1,-478.54 1244.1,-528 1244.1,-528 1244.1,-528 1978.73,-528 1978.73,-528 1978.73,-528 1978.73,-540.8 1978.73,-540.8"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1246.55,-478.54 1244.1,-471.54 1241.65,-478.54 1246.55,-478.54"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1976.28,-540.8 1978.73,-547.8 1981.18,-540.8 1976.28,-540.8"/>
+<text xml:space="preserve" text-anchor="middle" x="1561.59" y="-532.12" font-family="Arial" font-size="7.50" fill="#cc2222">2023中调沙伊复交</text>
+</g>
+<!-- IR_IRGC -->
+<g id="node8" class="node">
+<title>IR_IRGC</title>
+<polygon fill="#8b0000" stroke="#000000" stroke-width="2.5" points="2047.8,-466.6 1918.2,-466.6 1918.2,-411.7 2047.8,-411.7 2047.8,-466.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-450.85" font-family="Arial" font-size="9.00" fill="#ffffff">伊朗革命卫队</text>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-437.35" font-family="Arial" font-size="9.00" fill="#ffffff">（IRGC）</text>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-423.85" font-family="Arial" font-size="9.00" fill="#ffffff">+ 圣城军Quds Force</text>
+</g>
+<!-- SA_MBS&#45;&gt;IR_IRGC -->
+<g id="edge39" class="edge">
+<title>SA_MBS&#45;&gt;IR_IRGC</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1264,-478.55C1264,-478.55 1264,-516 1264,-516 1264,-516 1924.7,-516 1924.7,-516 1924.7,-516 1924.7,-478.55 1924.7,-478.55"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1266.45,-478.55 1264,-471.55 1261.55,-478.55 1266.45,-478.55"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1927.15,-478.55 1924.7,-471.55 1922.25,-478.55 1927.15,-478.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1564.35" y="-520.12" font-family="Arial" font-size="7.50" fill="#cc2222">也门代理战争对抗</text>
+</g>
+<!-- HOUTHI -->
+<g id="node9" class="node">
+<title>HOUTHI</title>
+<polygon fill="#8b0000" stroke="#000000" stroke-width="2.5" points="2227.8,-318.95 2098.2,-318.95 2098.2,-277.55 2227.8,-277.55 2227.8,-318.95"/>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-303.2" font-family="Arial" font-size="9.00" fill="#ffffff">也门胡塞武装</text>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-289.7" font-family="Arial" font-size="9.00" fill="#ffffff">（安萨尔真主）</text>
+</g>
+<!-- SA_MBS&#45;&gt;HOUTHI -->
+<g id="edge28" class="edge">
+<title>SA_MBS&#45;&gt;HOUTHI</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1206.6,-410.62C1206.6,-391.2 1206.6,-369 1206.6,-369 1206.6,-369 2130.6,-369 2130.6,-369 2130.6,-369 2130.6,-330.65 2130.6,-330.65"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2133.05,-330.65 2130.6,-323.65 2128.15,-330.65 2133.05,-330.65"/>
+<text xml:space="preserve" text-anchor="middle" x="1634.72" y="-373.12" font-family="Arial" font-size="7.50" fill="#cc2222">也门内战(沙特联军)</text>
+</g>
+<!-- CN_NOC -->
+<g id="node15" class="node">
+<title>CN_NOC</title>
+<polygon fill="#5c4a1a" stroke="#000000" stroke-width="2.5" points="1123.8,-600.75 994.2,-600.75 994.2,-559.35 1123.8,-559.35 1123.8,-600.75"/>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-585" font-family="Arial" font-size="9.00" fill="#ffffff">中国国家石油企业</text>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-571.5" font-family="Arial" font-size="9.00" fill="#ffffff">中石油/中石化/中海油</text>
+</g>
+<!-- SA_MBS&#45;&gt;CN_NOC -->
+<g id="edge43" class="edge">
+<title>SA_MBS&#45;&gt;CN_NOC</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M1187,-467.54C1187,-506.83 1187,-573 1187,-573 1187,-573 1134.15,-573 1134.15,-573"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1134.15,-570.55 1127.15,-573 1134.15,-575.45 1134.15,-570.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1160.75" y="-550.82" font-family="Arial" font-size="7.50" fill="#1a5296">人民币结算探索</text>
+</g>
+<!-- IL_GOVT -->
+<g id="node16" class="node">
+<title>IL_GOVT</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="685.8,-600.75 556.2,-600.75 556.2,-559.35 685.8,-559.35 685.8,-600.75"/>
+<text xml:space="preserve" text-anchor="middle" x="621" y="-585" font-family="Arial" font-size="9.00" fill="#ffffff">以色列政府</text>
+<text xml:space="preserve" text-anchor="middle" x="621" y="-571.5" font-family="Arial" font-size="9.00" fill="#ffffff">（内塔尼亚胡派系）</text>
+</g>
+<!-- SA_MBS&#45;&gt;IL_GOVT -->
+<g id="edge37" class="edge">
+<title>SA_MBS&#45;&gt;IL_GOVT</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M1193.4,-476.96C1193.4,-476.96 1193.4,-479 1193.4,-479 1193.4,-479 621,-479 621,-479 621,-479 621,-548.85 621,-548.85"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1195.85,-476.96 1193.4,-469.96 1190.95,-476.96 1195.85,-476.96"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="618.55,-548.85 621,-555.85 623.45,-548.85 618.55,-548.85"/>
+<text xml:space="preserve" text-anchor="middle" x="847.04" y="-483.12" font-family="Arial" font-size="7.50" fill="#1a5296">正常化谈判搁置</text>
+</g>
+<!-- OPEC_PLUS -->
+<g id="node18" class="node">
+<title>OPEC_PLUS</title>
+<polygon fill="#2e5e3f" stroke="#000000" stroke-width="2.5" points="829.8,-183.3 700.2,-183.3 700.2,-144.9 829.8,-144.9 829.8,-183.3"/>
+<text xml:space="preserve" text-anchor="middle" x="765" y="-167.55" font-family="Arial" font-size="9.00" fill="#ffffff">OPEC+</text>
+<text xml:space="preserve" text-anchor="middle" x="765" y="-157.05" font-family="Arial" font-size="9.00" fill="#ffffff">多边生产配额机制</text>
+</g>
+<!-- SA_MBS&#45;&gt;OPEC_PLUS -->
+<g id="edge1" class="edge">
+<title>SA_MBS&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1271.4,-399.7C1271.4,-399.7 1271.4,-164 1271.4,-164 1271.4,-164 841.73,-164 841.73,-164"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1268.95,-399.7 1271.4,-406.7 1273.85,-399.7 1268.95,-399.7"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.73,-161.55 834.73,-164 841.73,-166.45 841.73,-161.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1151.91" y="-168.12" font-family="Arial" font-size="7.50" fill="#cc2222">领导定价配额</text>
+</g>
+<!-- SA_ARAMCO&#45;&gt;OPEC_PLUS -->
+<g id="edge10" class="edge">
+<title>SA_ARAMCO&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1037.4,-271.26C1037.4,-233.91 1037.4,-171 1037.4,-171 1037.4,-171 841.72,-171 841.72,-171"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.72,-168.55 834.72,-171 841.72,-173.45 841.72,-168.55"/>
+<text xml:space="preserve" text-anchor="middle" x="967.19" y="-175.12" font-family="Arial" font-size="7.50" fill="#cc2222">产量数据支撑</text>
+</g>
+<!-- UAE_MBZ -->
+<g id="node3" class="node">
+<title>UAE_MBZ</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="1123.8,-465.1 994.2,-465.1 994.2,-413.2 1123.8,-413.2 1123.8,-465.1"/>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-449.35" font-family="Arial" font-size="9.00" fill="#ffffff">阿联酋</text>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-435.85" font-family="Arial" font-size="9.00" fill="#ffffff">（MBZ网络）</text>
+<text xml:space="preserve" text-anchor="middle" x="1059" y="-422.35" font-family="Arial" font-size="9.00" fill="#ffffff">+ ADNOC</text>
+</g>
+<!-- UAE_MBZ&#45;&gt;SA_ARAMCO -->
+<g id="edge11" class="edge">
+<title>UAE_MBZ&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M1080.6,-402.71C1080.6,-402.71 1080.6,-334.6 1080.6,-334.6"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1078.15,-402.71 1080.6,-409.71 1083.05,-402.71 1078.15,-402.71"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1083.05,-334.6 1080.6,-327.6 1078.15,-334.6 1083.05,-334.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1059.6" y="-372.78" font-family="Arial" font-size="7.50" fill="#1a5296">ADNOC竞争</text>
+</g>
+<!-- UAE_MBZ&#45;&gt;OPEC_PLUS -->
+<g id="edge3" class="edge">
+<title>UAE_MBZ&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M993.18,-426C913.52,-426 789.93,-426 789.93,-426 789.93,-426 789.93,-195 789.93,-195"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="792.38,-195 789.93,-188 787.48,-195 792.38,-195"/>
+<text xml:space="preserve" text-anchor="middle" x="766.31" y="-416.25" font-family="Arial" font-size="7.50" fill="#cc2222">配额参与/分歧</text>
+</g>
+<!-- QA_FUND -->
+<g id="node4" class="node">
+<title>QA_FUND</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="1483.8,-466.6 1354.2,-466.6 1354.2,-411.7 1483.8,-411.7 1483.8,-466.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1419" y="-450.85" font-family="Arial" font-size="9.00" fill="#ffffff">卡塔尔</text>
+<text xml:space="preserve" text-anchor="middle" x="1419" y="-437.35" font-family="Arial" font-size="9.00" fill="#ffffff">（埃米尔派系）</text>
+<text xml:space="preserve" text-anchor="middle" x="1419" y="-423.85" font-family="Arial" font-size="9.00" fill="#ffffff">+ QIA + 半岛电视台</text>
+</g>
+<!-- QA_FUND&#45;&gt;OPEC_PLUS -->
+<g id="edge4" class="edge">
+<title>QA_FUND&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1419,-410.64C1419,-339.17 1419,-158 1419,-158 1419,-158 841.79,-158 841.79,-158"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.79,-155.55 834.79,-158 841.79,-160.45 841.79,-155.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1241.72" y="-162.12" font-family="Arial" font-size="7.50" fill="#cc2222">配额参与</text>
+</g>
+<!-- KW_GOVT -->
+<g id="node5" class="node">
+<title>KW_GOVT</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="1.5" points="1663.8,-458.35 1534.2,-458.35 1534.2,-419.95 1663.8,-419.95 1663.8,-458.35"/>
+<text xml:space="preserve" text-anchor="middle" x="1599" y="-442.6" font-family="Arial" font-size="9.00" fill="#ffffff">科威特政府</text>
+<text xml:space="preserve" text-anchor="middle" x="1599" y="-429.1" font-family="Arial" font-size="9.00" fill="#ffffff">+ KPC</text>
+</g>
+<!-- IQ_GOVT -->
+<g id="node6" class="node">
+<title>IQ_GOVT</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="1.5" points="535.8,-318.95 406.2,-318.95 406.2,-277.55 535.8,-277.55 535.8,-318.95"/>
+<text xml:space="preserve" text-anchor="middle" x="471" y="-303.2" font-family="Arial" font-size="9.00" fill="#ffffff">伊拉克政府</text>
+<text xml:space="preserve" text-anchor="middle" x="471" y="-289.7" font-family="Arial" font-size="9.00" fill="#ffffff">（巴格达派系）</text>
+</g>
+<!-- IQ_GOVT&#45;&gt;OPEC_PLUS -->
+<g id="edge5" class="edge">
+<title>IQ_GOVT&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M536.39,-291C605.17,-291 703.53,-291 703.53,-291 703.53,-291 703.53,-193.76 703.53,-193.76"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="705.98,-193.76 703.53,-186.76 701.08,-193.76 705.98,-193.76"/>
+<text xml:space="preserve" text-anchor="middle" x="643.83" y="-295.12" font-family="Arial" font-size="7.50" fill="#1a5296">配额(低合规率)</text>
+</g>
+<!-- IR_SL&#45;&gt;QA_FUND -->
+<g id="edge40" class="edge">
+<title>IR_SL&#45;&gt;QA_FUND</title>
+<path fill="none" stroke="#aaaaaa" stroke-width="0.7" stroke-dasharray="1,5" d="M1935.13,-587C1935.13,-587 1906,-587 1906,-587 1906,-587 1906,-462 1906,-462 1906,-462 1492.99,-462 1492.99,-462"/>
+<polygon fill="#aaaaaa" stroke="#aaaaaa" stroke-width="0.7" points="1935.13,-589.45 1942.13,-587 1935.13,-584.55 1935.13,-589.45"/>
+<polygon fill="#aaaaaa" stroke="#aaaaaa" stroke-width="0.7" points="1492.99,-459.55 1485.99,-462 1492.99,-464.45 1492.99,-459.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1740.18" y="-466.12" font-family="Arial" font-size="7.50" fill="#aaaaaa">叙事竞争[INFERRED]</text>
+</g>
+<!-- IR_SL&#45;&gt;IR_IRGC -->
+<g id="edge18" class="edge">
+<title>IR_SL&#45;&gt;IR_IRGC</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2013.27,-551.54C2013.27,-551.54 2013.27,-478.4 2013.27,-478.4"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2015.72,-478.4 2013.27,-471.4 2010.82,-478.4 2015.72,-478.4"/>
+<text xml:space="preserve" text-anchor="middle" x="1983.27" y="-519.1" font-family="Arial" font-size="7.50" fill="#cc2222">最高领袖直接指挥</text>
+</g>
+<!-- IR_IRGC&#45;&gt;HOUTHI -->
+<g id="edge19" class="edge">
+<title>IR_IRGC&#45;&gt;HOUTHI</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2049,-414C2100.38,-414 2163,-414 2163,-414 2163,-414 2163,-330.81 2163,-330.81"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2165.45,-330.81 2163,-323.81 2160.55,-330.81 2165.45,-330.81"/>
+<text xml:space="preserve" text-anchor="middle" x="2122.85" y="-418.12" font-family="Arial" font-size="7.50" fill="#cc2222">武器/资金/训练</text>
+</g>
+<!-- PMF_IQ -->
+<g id="node10" class="node">
+<title>PMF_IQ</title>
+<polygon fill="#8b0000" stroke="#000000" stroke-width="2.5" points="2407.8,-325.7 2278.2,-325.7 2278.2,-270.8 2407.8,-270.8 2407.8,-325.7"/>
+<text xml:space="preserve" text-anchor="middle" x="2343" y="-309.95" font-family="Arial" font-size="9.00" fill="#ffffff">伊拉克</text>
+<text xml:space="preserve" text-anchor="middle" x="2343" y="-296.45" font-family="Arial" font-size="9.00" fill="#ffffff">人民动员力量PMF</text>
+<text xml:space="preserve" text-anchor="middle" x="2343" y="-282.95" font-family="Arial" font-size="9.00" fill="#ffffff">（亲伊朗派系）</text>
+</g>
+<!-- IR_IRGC&#45;&gt;PMF_IQ -->
+<g id="edge20" class="edge">
+<title>IR_IRGC&#45;&gt;PMF_IQ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2048.65,-416C2147.06,-416 2321.4,-416 2321.4,-416 2321.4,-416 2321.4,-337.54 2321.4,-337.54"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2323.85,-337.54 2321.4,-330.54 2318.95,-337.54 2323.85,-337.54"/>
+<text xml:space="preserve" text-anchor="middle" x="2194.26" y="-420.12" font-family="Arial" font-size="7.50" fill="#cc2222">伊朗化伊拉克民兵</text>
+</g>
+<!-- HEZBOLLAH -->
+<g id="node11" class="node">
+<title>HEZBOLLAH</title>
+<polygon fill="#8b0000" stroke="#000000" stroke-width="2.5" points="2047.8,-318.95 1918.2,-318.95 1918.2,-277.55 2047.8,-277.55 2047.8,-318.95"/>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-303.2" font-family="Arial" font-size="9.00" fill="#ffffff">黎巴嫩真主党</text>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-289.7" font-family="Arial" font-size="9.00" fill="#ffffff">+ Al&#45;Amana能源网络</text>
+</g>
+<!-- IR_IRGC&#45;&gt;HEZBOLLAH -->
+<g id="edge21" class="edge">
+<title>IR_IRGC&#45;&gt;HEZBOLLAH</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1961.4,-410.64C1961.4,-410.64 1961.4,-330.6 1961.4,-330.6"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1963.85,-330.6 1961.4,-323.6 1958.95,-330.6 1963.85,-330.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1936.27" y="-374.74" font-family="Arial" font-size="7.50" fill="#cc2222">$7亿+/年+武器</text>
+</g>
+<!-- HORMUZ -->
+<g id="node23" class="node">
+<title>HORMUZ</title>
+<polygon fill="#1a5c5c" stroke="#0d3333" stroke-width="2.5" points="2227.8,-57.4 2098.2,-57.4 2098.2,-16 2227.8,-16 2227.8,-57.4"/>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-41.65" font-family="Arial" font-size="9.00" fill="#ffffff">霍尔木兹海峡</text>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-28.15" font-family="Arial" font-size="9.00" fill="#ffffff">（波斯湾咽喉）</text>
+</g>
+<!-- IR_IRGC&#45;&gt;HORMUZ -->
+<g id="edge29" class="edge">
+<title>IR_IRGC&#45;&gt;HORMUZ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2048.91,-418C2058.45,-418 2065.13,-418 2065.13,-418 2065.13,-418 2065.13,-49 2065.13,-49 2065.13,-49 2086.39,-49 2086.39,-49"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2086.39,-51.45 2093.39,-49 2086.39,-46.55 2086.39,-51.45"/>
+<text xml:space="preserve" text-anchor="middle" x="2041.51" y="-235.11" font-family="Arial" font-size="7.50" fill="#cc2222">封锁威胁/骚扰</text>
+</g>
+<!-- BAB_MAND -->
+<g id="node24" class="node">
+<title>BAB_MAND</title>
+<polygon fill="#1a5c5c" stroke="#0d3333" stroke-width="2.5" points="2227.8,-184.8 2098.2,-184.8 2098.2,-143.4 2227.8,-143.4 2227.8,-184.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-169.05" font-family="Arial" font-size="9.00" fill="#ffffff">曼德海峡</text>
+<text xml:space="preserve" text-anchor="middle" x="2163" y="-155.55" font-family="Arial" font-size="9.00" fill="#ffffff">（红海入口）</text>
+</g>
+<!-- HOUTHI&#45;&gt;BAB_MAND -->
+<g id="edge25" class="edge">
+<title>HOUTHI&#45;&gt;BAB_MAND</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2163,-276.4C2163,-276.4 2163,-196.73 2163,-196.73"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2165.45,-196.73 2163,-189.73 2160.55,-196.73 2165.45,-196.73"/>
+<text xml:space="preserve" text-anchor="middle" x="2133" y="-240.69" font-family="Arial" font-size="7.50" fill="#cc2222">袭击商船(200+次)</text>
+</g>
+<!-- PMF_IQ&#45;&gt;SA_ARAMCO -->
+<g id="edge23" class="edge">
+<title>PMF_IQ&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#888888" stroke-dasharray="5,2" d="M2343,-269.8C2343,-255.84 2343,-242 2343,-242 2343,-242 1080.6,-242 1080.6,-242 1080.6,-242 1080.6,-262.6 1080.6,-262.6"/>
+<polygon fill="#888888" stroke="#888888" points="1078.15,-262.6 1080.6,-269.6 1083.05,-262.6 1078.15,-262.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1682.02" y="-246.12" font-family="Arial" font-size="7.50" fill="#888888">威胁沙特设施[LOW]</text>
+</g>
+<!-- PMF_IQ&#45;&gt;IQ_GOVT -->
+<g id="edge22" class="edge">
+<title>PMF_IQ&#45;&gt;IQ_GOVT</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2364.6,-326.78C2364.6,-353.71 2364.6,-390 2364.6,-390 2364.6,-390 520.8,-390 520.8,-390 520.8,-390 520.8,-330.31 520.8,-330.31"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="523.25,-330.31 520.8,-323.31 518.35,-330.31 523.25,-330.31"/>
+<text xml:space="preserve" text-anchor="middle" x="1413.34" y="-394.12" font-family="Arial" font-size="7.50" fill="#cc2222">政治渗透议会/部委</text>
+</g>
+<!-- HEZBOLLAH&#45;&gt;IR_IRGC -->
+<g id="edge24" class="edge">
+<title>HEZBOLLAH&#45;&gt;IR_IRGC</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2004.6,-319.96C2004.6,-319.96 2004.6,-399.81 2004.6,-399.81"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2002.15,-399.81 2004.6,-406.81 2007.05,-399.81 2002.15,-399.81"/>
+<text xml:space="preserve" text-anchor="middle" x="1974.6" y="-352.76" font-family="Arial" font-size="7.50" fill="#cc2222">伊朗油黎巴嫩分销</text>
+</g>
+<!-- RU_KREMLIN -->
+<g id="node12" class="node">
+<title>RU_KREMLIN</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="839.8,-746.9 710.2,-746.9 710.2,-695 839.8,-695 839.8,-746.9"/>
+<text xml:space="preserve" text-anchor="middle" x="775" y="-731.15" font-family="Arial" font-size="9.00" fill="#ffffff">俄罗斯</text>
+<text xml:space="preserve" text-anchor="middle" x="775" y="-717.65" font-family="Arial" font-size="9.00" fill="#ffffff">（克宫能源外交）</text>
+<text xml:space="preserve" text-anchor="middle" x="775" y="-704.15" font-family="Arial" font-size="9.00" fill="#ffffff">+ Rosneft</text>
+</g>
+<!-- RU_KREMLIN&#45;&gt;CN_NOC -->
+<g id="edge17" class="edge">
+<title>RU_KREMLIN&#45;&gt;CN_NOC</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M834.8,-693.81C834.8,-651.1 834.8,-573 834.8,-573 834.8,-573 982.46,-573 982.46,-573"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="982.46,-575.45 989.46,-573 982.46,-570.55 982.46,-575.45"/>
+<text xml:space="preserve" text-anchor="middle" x="814.47" y="-577.12" font-family="Arial" font-size="7.50" fill="#cc2222">制裁后扩大对华出口</text>
+</g>
+<!-- RU_KREMLIN&#45;&gt;OPEC_PLUS -->
+<g id="edge2" class="edge">
+<title>RU_KREMLIN&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M750.07,-683.31C750.07,-683.31 750.07,-195.05 750.07,-195.05"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="747.62,-683.31 750.07,-690.31 752.52,-683.31 747.62,-683.31"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="752.52,-195.05 750.07,-188.05 747.62,-195.05 752.52,-195.05"/>
+<text xml:space="preserve" text-anchor="middle" x="721.94" y="-443.31" font-family="Arial" font-size="7.50" fill="#cc2222">OPEC+共同主导</text>
+</g>
+<!-- US_SHALE -->
+<g id="node13" class="node">
+<title>US_SHALE</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="1019.8,-748.4 890.2,-748.4 890.2,-693.5 1019.8,-693.5 1019.8,-748.4"/>
+<text xml:space="preserve" text-anchor="middle" x="955" y="-732.65" font-family="Arial" font-size="9.00" fill="#ffffff">美国</text>
+<text xml:space="preserve" text-anchor="middle" x="955" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">页岩油集团</text>
+<text xml:space="preserve" text-anchor="middle" x="955" y="-705.65" font-family="Arial" font-size="9.00" fill="#ffffff">（德州&#45;华盛顿轴）</text>
+</g>
+<!-- US_SHALE&#45;&gt;OPEC_PLUS -->
+<g id="edge8" class="edge">
+<title>US_SHALE&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M942.2,-692.47C942.2,-580.55 942.2,-177 942.2,-177 942.2,-177 841.77,-177 841.77,-177"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.77,-174.55 834.77,-177 841.77,-179.45 841.77,-174.55"/>
+<text xml:space="preserve" text-anchor="middle" x="919.7" y="-388.64" font-family="Arial" font-size="7.50" fill="#cc2222">市场竞争压力</text>
+</g>
+<!-- IEA -->
+<g id="node19" class="node">
+<title>IEA</title>
+<polygon fill="#2e5e3f" stroke="#000000" stroke-width="2.5" points="829.8,-57.4 700.2,-57.4 700.2,-16 829.8,-16 829.8,-57.4"/>
+<text xml:space="preserve" text-anchor="middle" x="765" y="-41.65" font-family="Arial" font-size="9.00" fill="#ffffff">国际能源署IEA</text>
+<text xml:space="preserve" text-anchor="middle" x="765" y="-28.15" font-family="Arial" font-size="9.00" fill="#ffffff">（西方消费国集团）</text>
+</g>
+<!-- US_SHALE&#45;&gt;IEA -->
+<g id="edge7" class="edge">
+<title>US_SHALE&#45;&gt;IEA</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M968.2,-692.43C968.2,-562.99 968.2,-37 968.2,-37 968.2,-37 841.76,-37 841.76,-37"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.76,-34.55 834.76,-37 841.76,-39.45 841.76,-34.55"/>
+<text xml:space="preserve" text-anchor="middle" x="945.7" y="-305.62" font-family="Arial" font-size="7.50" fill="#cc2222">西方战略储备</text>
+</g>
+<!-- US_CENTCOM -->
+<g id="node14" class="node">
+<title>US_CENTCOM</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="2.5" points="1199.8,-741.65 1070.2,-741.65 1070.2,-700.25 1199.8,-700.25 1199.8,-741.65"/>
+<text xml:space="preserve" text-anchor="middle" x="1135" y="-725.9" font-family="Arial" font-size="9.00" fill="#ffffff">美国中央司令部</text>
+<text xml:space="preserve" text-anchor="middle" x="1135" y="-712.4" font-family="Arial" font-size="9.00" fill="#ffffff">（CENTCOM）</text>
+</g>
+<!-- US_CENTCOM&#45;&gt;HOUTHI -->
+<g id="edge27" class="edge">
+<title>US_CENTCOM&#45;&gt;HOUTHI</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1200.93,-727C1432.6,-727 2195.4,-727 2195.4,-727 2195.4,-727 2195.4,-330.89 2195.4,-330.89"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2197.85,-330.89 2195.4,-323.89 2192.95,-330.89 2197.85,-330.89"/>
+<text xml:space="preserve" text-anchor="middle" x="1872.6" y="-731.12" font-family="Arial" font-size="7.50" fill="#cc2222">军事反制OPG</text>
+</g>
+<!-- US_CENTCOM&#45;&gt;IL_GOVT -->
+<g id="edge36" class="edge">
+<title>US_CENTCOM&#45;&gt;IL_GOVT</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1097,-699.2C1097,-678.67 1097,-651 1097,-651 1097,-651 621,-651 621,-651 621,-651 621,-612.51 621,-612.51"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="623.45,-612.51 621,-605.51 618.55,-612.51 623.45,-612.51"/>
+<text xml:space="preserve" text-anchor="middle" x="827.85" y="-655.12" font-family="Arial" font-size="7.50" fill="#cc2222">CENTCOM区责+武器</text>
+</g>
+<!-- US_CENTCOM&#45;&gt;HORMUZ -->
+<g id="edge30" class="edge">
+<title>US_CENTCOM&#45;&gt;HORMUZ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1200.83,-715C1415.58,-715 2081.93,-715 2081.93,-715 2081.93,-715 2081.93,-24 2081.93,-24 2081.93,-24 2086.4,-24 2086.4,-24"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2086.4,-26.45 2093.4,-24 2086.4,-21.55 2086.4,-26.45"/>
+<text xml:space="preserve" text-anchor="middle" x="1965.49" y="-719.12" font-family="Arial" font-size="7.50" fill="#cc2222">护航/海上阻绝</text>
+</g>
+<!-- CN_NOC&#45;&gt;SA_ARAMCO -->
+<g id="edge12" class="edge">
+<title>CN_NOC&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1124.88,-587C1138.61,-587 1149,-587 1149,-587 1149,-587 1149,-309 1149,-309 1149,-309 1135.67,-309 1135.67,-309"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1135.67,-306.55 1128.67,-309 1135.67,-311.45 1135.67,-306.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1124.25" y="-457.52" font-family="Arial" font-size="7.50" fill="#cc2222">石油长约(买方)</text>
+</g>
+<!-- CN_NOC&#45;&gt;UAE_MBZ -->
+<g id="edge42" class="edge">
+<title>CN_NOC&#45;&gt;UAE_MBZ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1026.6,-558.34C1026.6,-558.34 1026.6,-476.72 1026.6,-476.72"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1029.05,-476.72 1026.6,-469.72 1024.15,-476.72 1029.05,-476.72"/>
+<text xml:space="preserve" text-anchor="middle" x="998.1" y="-521.66" font-family="Arial" font-size="7.50" fill="#cc2222">ADNOC投资合作</text>
+</g>
+<!-- CN_NOC&#45;&gt;QA_FUND -->
+<g id="edge41" class="edge">
+<title>CN_NOC&#45;&gt;QA_FUND</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1059,-558.18C1059,-535.4 1059,-503 1059,-503 1059,-503 1379.2,-503 1379.2,-503 1379.2,-503 1379.2,-478.5 1379.2,-478.5"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1381.65,-478.5 1379.2,-471.5 1376.75,-478.5 1381.65,-478.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1167.76" y="-507.12" font-family="Arial" font-size="7.50" fill="#cc2222">卡塔尔LNG 27年合同</text>
+</g>
+<!-- CN_NOC&#45;&gt;IQ_GOVT -->
+<g id="edge13" class="edge">
+<title>CN_NOC&#45;&gt;IQ_GOVT</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M993.03,-587C955.62,-587 916.2,-587 916.2,-587 916.2,-587 916.2,-305 916.2,-305 916.2,-305 547,-305 547,-305"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="547,-302.55 540,-305 547,-307.45 547,-302.55"/>
+<text xml:space="preserve" text-anchor="middle" x="884.77" y="-309.12" font-family="Arial" font-size="7.50" fill="#cc2222">鲁迈拉油田开采</text>
+</g>
+<!-- CN_NOC&#45;&gt;IR_IRGC -->
+<g id="edge14" class="edge">
+<title>CN_NOC&#45;&gt;IR_IRGC</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M1091.4,-558.15C1091.4,-548.8 1091.4,-540 1091.4,-540 1091.4,-540 1931.2,-540 1931.2,-540 1931.2,-540 1931.2,-477.05 1931.2,-477.05"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1933.65,-477.05 1931.2,-470.05 1928.75,-477.05 1933.65,-477.05"/>
+<text xml:space="preserve" text-anchor="middle" x="1507.45" y="-544.12" font-family="Arial" font-size="7.50" fill="#1a5296">绕制裁购伊朗油</text>
+</g>
+<!-- IL_GOVT&#45;&gt;SA_MBS -->
+<g id="edge35" class="edge">
+<title>IL_GOVT&#45;&gt;SA_MBS</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M653.4,-549.22C653.4,-549.22 653.4,-491 653.4,-491 653.4,-491 1180.6,-491 1180.6,-491 1180.6,-491 1180.6,-477.08 1180.6,-477.08"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="650.95,-549.22 653.4,-556.22 655.85,-549.22 650.95,-549.22"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1183.05,-477.08 1180.6,-470.08 1178.15,-477.08 1183.05,-477.08"/>
+<text xml:space="preserve" text-anchor="middle" x="868.6" y="-495.12" font-family="Arial" font-size="7.50" fill="#1a5296">非正式安全协作</text>
+</g>
+<!-- IL_GOVT&#45;&gt;UAE_MBZ -->
+<g id="edge34" class="edge">
+<title>IL_GOVT&#45;&gt;UAE_MBZ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M588.6,-547.54C588.6,-547.54 588.6,-452 588.6,-452 588.6,-452 982.31,-452 982.31,-452"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="586.15,-547.54 588.6,-554.54 591.05,-547.54 586.15,-547.54"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="982.31,-454.45 989.31,-452 982.31,-449.55 982.31,-454.45"/>
+<text xml:space="preserve" text-anchor="middle" x="715.18" y="-456.12" font-family="Arial" font-size="7.50" fill="#cc2222">亚伯拉罕协议</text>
+</g>
+<!-- TR_ERDOGAN -->
+<g id="node17" class="node">
+<title>TR_ERDOGAN</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="1.5" points="505.8,-607.5 376.2,-607.5 376.2,-552.6 505.8,-552.6 505.8,-607.5"/>
+<text xml:space="preserve" text-anchor="middle" x="441" y="-591.75" font-family="Arial" font-size="9.00" fill="#ffffff">土耳其</text>
+<text xml:space="preserve" text-anchor="middle" x="441" y="-578.25" font-family="Arial" font-size="9.00" fill="#ffffff">（埃尔多安政府）</text>
+<text xml:space="preserve" text-anchor="middle" x="441" y="-564.75" font-family="Arial" font-size="9.00" fill="#ffffff">能源枢纽战略</text>
+</g>
+<!-- SUEZ -->
+<g id="node25" class="node">
+<title>SUEZ</title>
+<polygon fill="#1a5c5c" stroke="#0d3333" stroke-width="2.5" points="2047.8,-57.4 1918.2,-57.4 1918.2,-16 2047.8,-16 2047.8,-57.4"/>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-41.65" font-family="Arial" font-size="9.00" fill="#ffffff">苏伊士运河</text>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-28.15" font-family="Arial" font-size="9.00" fill="#ffffff">（埃及控制）</text>
+</g>
+<!-- TR_ERDOGAN&#45;&gt;SUEZ -->
+<g id="edge31" class="edge">
+<title>TR_ERDOGAN&#45;&gt;SUEZ</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M386.2,-552.17C386.2,-449.71 386.2,-100 386.2,-100 386.2,-100 1983,-100 1983,-100 1983,-100 1983,-67.75 1983,-67.75"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1985.45,-67.75 1983,-60.75 1980.55,-67.75 1985.45,-67.75"/>
+<text xml:space="preserve" text-anchor="middle" x="942.01" y="-104.12" font-family="Arial" font-size="7.50" fill="#1a5296">Kirkuk&#45;Ceyhan替代</text>
+</g>
+<!-- BTC_PIPE -->
+<g id="node26" class="node">
+<title>BTC_PIPE</title>
+<polygon fill="#1a5c5c" stroke="#0d3333" stroke-width="1.5" points="2047.8,-184.8 1918.2,-184.8 1918.2,-143.4 2047.8,-143.4 2047.8,-184.8"/>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-169.05" font-family="Arial" font-size="9.00" fill="#ffffff">BTC管道</text>
+<text xml:space="preserve" text-anchor="middle" x="1983" y="-155.55" font-family="Arial" font-size="9.00" fill="#ffffff">（巴库&#45;第比利斯&#45;杰伊汉）</text>
+</g>
+<!-- TR_ERDOGAN&#45;&gt;BTC_PIPE -->
+<g id="edge32" class="edge">
+<title>TR_ERDOGAN&#45;&gt;BTC_PIPE</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M396.2,-551.86C396.2,-465.91 396.2,-213 396.2,-213 396.2,-213 1983,-213 1983,-213 1983,-213 1983,-196.19 1983,-196.19"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1985.45,-196.19 1983,-189.19 1980.55,-196.19 1985.45,-196.19"/>
+<text xml:space="preserve" text-anchor="middle" x="1004.95" y="-217.12" font-family="Arial" font-size="7.50" fill="#cc2222">运营/通道税收</text>
+</g>
+<!-- OPEC_PLUS&#45;&gt;IEA -->
+<g id="edge6" class="edge">
+<title>OPEC_PLUS&#45;&gt;IEA</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M765,-133.13C765,-133.13 765,-69.28 765,-69.28"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="762.55,-133.13 765,-140.13 767.45,-133.13 762.55,-133.13"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="767.45,-69.28 765,-62.28 762.55,-69.28 767.45,-69.28"/>
+<text xml:space="preserve" text-anchor="middle" x="750" y="-105.33" font-family="Arial" font-size="7.50" fill="#cc2222">定价博弈</text>
+</g>
+<!-- MAJORS_W -->
+<g id="node20" class="node">
+<title>MAJORS_W</title>
+<polygon fill="#4a1a5c" stroke="#000000" stroke-width="2.5" points="325.8,-604.5 196.2,-604.5 196.2,-555.6 325.8,-555.6 325.8,-604.5"/>
+<text xml:space="preserve" text-anchor="middle" x="261" y="-588.75" font-family="Arial" font-size="9.00" fill="#ffffff">西方石油巨头</text>
+<text xml:space="preserve" text-anchor="middle" x="261" y="-575.25" font-family="Arial" font-size="9.00" fill="#ffffff">Exxon/BP/Shell</text>
+<text xml:space="preserve" text-anchor="middle" x="261" y="-564.75" font-family="Arial" font-size="9.00" fill="#ffffff">/TotalEnergies</text>
+</g>
+<!-- MAJORS_W&#45;&gt;SA_ARAMCO -->
+<g id="edge16" class="edge">
+<title>MAJORS_W&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M293.8,-554.67C293.8,-494.26 293.8,-347 293.8,-347 293.8,-347 1037.4,-347 1037.4,-347 1037.4,-347 1037.4,-334.46 1037.4,-334.46"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1039.85,-334.46 1037.4,-327.46 1034.95,-334.46 1039.85,-334.46"/>
+<text xml:space="preserve" text-anchor="middle" x="543.29" y="-351.12" font-family="Arial" font-size="7.50" fill="#1a5296">技术合作(递减)</text>
+</g>
+<!-- MAJORS_W&#45;&gt;IQ_GOVT -->
+<g id="edge15" class="edge">
+<title>MAJORS_W&#45;&gt;IQ_GOVT</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M261.8,-554.52C261.8,-485.09 261.8,-298 261.8,-298 261.8,-298 394.88,-298 394.88,-298"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="394.88,-300.45 401.88,-298 394.88,-295.55 394.88,-300.45"/>
+<text xml:space="preserve" text-anchor="middle" x="239.3" y="-363.84" font-family="Arial" font-size="7.50" fill="#cc2222">油田服务合同</text>
+</g>
+<!-- LY_CHAOS -->
+<g id="node21" class="node">
+<title>LY_CHAOS</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="1.5" points="229.8,-465.1 100.2,-465.1 100.2,-413.2 229.8,-413.2 229.8,-465.1"/>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-449.35" font-family="Arial" font-size="9.00" fill="#ffffff">利比亚</text>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-435.85" font-family="Arial" font-size="9.00" fill="#ffffff">（碎片化政权）</text>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-422.35" font-family="Arial" font-size="9.00" fill="#ffffff">+ NOC</text>
+</g>
+<!-- MAJORS_W&#45;&gt;LY_CHAOS -->
+<g id="edge46" class="edge">
+<title>MAJORS_W&#45;&gt;LY_CHAOS</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M213,-554.53C213,-554.53 213,-474.7 213,-474.7"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="215.45,-474.7 213,-467.7 210.55,-474.7 215.45,-474.7"/>
+<text xml:space="preserve" text-anchor="middle" x="190.5" y="-518.74" font-family="Arial" font-size="7.50" fill="#1a5296">油田开发合同</text>
+</g>
+<!-- LY_CHAOS&#45;&gt;OPEC_PLUS -->
+<g id="edge44" class="edge">
+<title>LY_CHAOS&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M230.36,-439C374.48,-439 706.87,-439 706.87,-439 706.87,-439 706.87,-193.58 706.87,-193.58"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="709.32,-193.58 706.87,-186.58 704.42,-193.58 709.32,-193.58"/>
+<text xml:space="preserve" text-anchor="middle" x="576.32" y="-443.12" font-family="Arial" font-size="7.50" fill="#1a5296">豁免参与</text>
+</g>
+<!-- NG_GOVT -->
+<g id="node22" class="node">
+<title>NG_GOVT</title>
+<polygon fill="#1a3a5c" stroke="#000000" stroke-width="1.5" points="145.8,-599.25 16.2,-599.25 16.2,-560.85 145.8,-560.85 145.8,-599.25"/>
+<text xml:space="preserve" text-anchor="middle" x="81" y="-583.5" font-family="Arial" font-size="9.00" fill="#ffffff">尼日利亚政府</text>
+<text xml:space="preserve" text-anchor="middle" x="81" y="-570" font-family="Arial" font-size="9.00" fill="#ffffff">+ NNPC</text>
+</g>
+<!-- NG_GOVT&#45;&gt;OPEC_PLUS -->
+<g id="edge45" class="edge">
+<title>NG_GOVT&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M58.2,-560.26C58.2,-477.58 58.2,-164 58.2,-164 58.2,-164 688.36,-164 688.36,-164"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="688.36,-166.45 695.36,-164 688.36,-161.55 688.36,-166.45"/>
+<text xml:space="preserve" text-anchor="middle" x="160.15" y="-168.12" font-family="Arial" font-size="7.50" fill="#cc2222">配额成员</text>
+</g>
+<!-- BAB_MAND&#45;&gt;SUEZ -->
+<g id="edge26" class="edge">
+<title>BAB_MAND&#45;&gt;SUEZ</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M2090.77,-157C2090.77,-157 2090.07,-157 2090.07,-157 2090.07,-157 2090.07,-33 2090.07,-33 2090.07,-33 2059.76,-33 2059.76,-33"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2086.28,-159.45 2093.28,-157 2086.28,-154.55 2086.28,-159.45"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="2059.76,-30.55 2052.76,-33 2059.76,-35.45 2059.76,-30.55"/>
+<text xml:space="preserve" text-anchor="middle" x="2060.07" y="-73.07" font-family="Arial" font-size="7.50" fill="#cc2222">红海→苏伊士扰动</text>
+</g>
+<!-- BTC_PIPE&#45;&gt;HORMUZ -->
+<g id="edge33" class="edge">
+<title>BTC_PIPE&#45;&gt;HORMUZ</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M2055.65,-171C2055.65,-171 2056.47,-171 2056.47,-171 2056.47,-171 2056.47,-41 2056.47,-41 2056.47,-41 2087.78,-41 2087.78,-41"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="2057.59,-168.55 2050.59,-171 2057.59,-173.45 2057.59,-168.55"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="2087.78,-43.45 2094.78,-41 2087.78,-38.55 2087.78,-43.45"/>
+<text xml:space="preserve" text-anchor="middle" x="2018.97" y="-94.88" font-family="Arial" font-size="7.50" fill="#1a5296">里海油绕霍尔木兹替代</text>
+</g>
+<!-- WAHHABISM -->
+<g id="node27" class="node">
+<title>WAHHABISM</title>
+<polygon fill="#5c5c1a" stroke="#3d3d10" stroke-width="1.5" points="1353.8,-600.75 1224.2,-600.75 1224.2,-559.35 1353.8,-559.35 1353.8,-600.75"/>
+<text xml:space="preserve" text-anchor="middle" x="1289" y="-585" font-family="Arial" font-size="9.00" fill="#ffffff">瓦哈比主义</text>
+<text xml:space="preserve" text-anchor="middle" x="1289" y="-571.5" font-family="Arial" font-size="9.00" fill="#ffffff">国家意识形态输出</text>
+</g>
+<!-- WAHHABISM&#45;&gt;SA_MBS -->
+<g id="edge47" class="edge">
+<title>WAHHABISM&#45;&gt;SA_MBS</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M1283.9,-558.65C1283.9,-558.65 1283.9,-477.11 1283.9,-477.11"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="1286.35,-477.11 1283.9,-470.11 1281.45,-477.11 1286.35,-477.11"/>
+<text xml:space="preserve" text-anchor="middle" x="1261.4" y="-522.01" font-family="Arial" font-size="7.50" fill="#1a5296">意识形态输出</text>
+</g>
+<!-- SHIA_CRES -->
+<g id="node28" class="node">
+<title>SHIA_CRES</title>
+<polygon fill="#5c5c1a" stroke="#3d3d10" stroke-width="1.5" points="1893.8,-600.75 1764.2,-600.75 1764.2,-559.35 1893.8,-559.35 1893.8,-600.75"/>
+<text xml:space="preserve" text-anchor="middle" x="1829" y="-585" font-family="Arial" font-size="9.00" fill="#ffffff">什叶新月意识形态</text>
+<text xml:space="preserve" text-anchor="middle" x="1829" y="-571.5" font-family="Arial" font-size="9.00" fill="#ffffff">（伊朗版本）</text>
+</g>
+<!-- SHIA_CRES&#45;&gt;IR_IRGC -->
+<g id="edge48" class="edge">
+<title>SHIA_CRES&#45;&gt;IR_IRGC</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1894.43,-573C1917.45,-573 1937.7,-573 1937.7,-573 1937.7,-573 1937.7,-478.32 1937.7,-478.32"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1940.15,-478.32 1937.7,-471.32 1935.25,-478.32 1940.15,-478.32"/>
+<text xml:space="preserve" text-anchor="middle" x="1915.2" y="-551.42" font-family="Arial" font-size="7.50" fill="#cc2222">抵抗轴心基础</text>
+</g>
+<!-- ARAMCO_HIST -->
+<g id="node29" class="node">
+<title>ARAMCO_HIST</title>
+<polygon fill="#f5f0e8" stroke="#8b7355" stroke-width="2.5" points="1533.8,-607.5 1404.2,-607.5 1404.2,-552.6 1533.8,-552.6 1533.8,-607.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1469" y="-591.75" font-family="Arial" font-size="9.00" fill="#333333">七姐妹时代</text>
+<text xml:space="preserve" text-anchor="middle" x="1469" y="-578.25" font-family="Arial" font-size="9.00" fill="#333333">（美英石油垄断）</text>
+<text xml:space="preserve" text-anchor="middle" x="1469" y="-564.75" font-family="Arial" font-size="9.00" fill="#333333">1945&#45;1973背景层</text>
+</g>
+<!-- ARAMCO_HIST&#45;&gt;SA_ARAMCO -->
+<g id="edge50" class="edge">
+<title>ARAMCO_HIST&#45;&gt;SA_ARAMCO</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1508.8,-551.52C1508.8,-478.03 1508.8,-288 1508.8,-288 1508.8,-288 1135.67,-288 1135.67,-288"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="1135.67,-285.55 1128.67,-288 1135.67,-290.45 1135.67,-285.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1425.12" y="-292.12" font-family="Arial" font-size="7.50" fill="#cc2222">历史:国有化1988</text>
+</g>
+<!-- OPEC_1973 -->
+<g id="node30" class="node">
+<title>OPEC_1973</title>
+<polygon fill="#f5f0e8" stroke="#8b7355" stroke-width="2.5" points="1713.8,-607.5 1584.2,-607.5 1584.2,-552.6 1713.8,-552.6 1713.8,-607.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1649" y="-591.75" font-family="Arial" font-size="9.00" fill="#333333">OPEC石油禁运</text>
+<text xml:space="preserve" text-anchor="middle" x="1649" y="-578.25" font-family="Arial" font-size="9.00" fill="#333333">（1973&#45;1974）</text>
+<text xml:space="preserve" text-anchor="middle" x="1649" y="-564.75" font-family="Arial" font-size="9.00" fill="#333333">背景层</text>
+</g>
+<!-- OPEC_1973&#45;&gt;OPEC_PLUS -->
+<g id="edge49" class="edge">
+<title>OPEC_1973&#45;&gt;OPEC_PLUS</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M1688.8,-551.57C1688.8,-455.74 1688.8,-151 1688.8,-151 1688.8,-151 841.48,-151 841.48,-151"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="841.48,-148.55 834.48,-151 841.48,-153.45 841.48,-148.55"/>
+<text xml:space="preserve" text-anchor="middle" x="1450.42" y="-155.12" font-family="Arial" font-size="7.50" fill="#cc2222">历史演化</text>
+</g>
+<!-- L_state -->
+<g id="node31" class="node">
+<title>L_state</title>
+<polygon fill="#1a3a5c" stroke="black" stroke-width="1.5" points="2940,-738.95 2832,-738.95 2832,-702.95 2940,-702.95 2940,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="2886" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">国家精英派系</text>
+</g>
+<!-- L_militia -->
+<g id="node32" class="node">
+<title>L_militia</title>
+<polygon fill="#8b0000" stroke="black" stroke-width="1.5" points="3098,-738.95 2990,-738.95 2990,-702.95 3098,-702.95 3098,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="3044" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">代理武装</text>
+</g>
+<!-- L_intl -->
+<g id="node33" class="node">
+<title>L_intl</title>
+<polygon fill="#2e5e3f" stroke="black" stroke-width="1.5" points="3256,-738.95 3148,-738.95 3148,-702.95 3256,-702.95 3256,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="3202" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">多边机制</text>
+</g>
+<!-- L_corp_n -->
+<g id="node34" class="node">
+<title>L_corp_n</title>
+<polygon fill="#5c4a1a" stroke="black" stroke-width="1.5" points="3414,-738.95 3306,-738.95 3306,-702.95 3414,-702.95 3414,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="3360" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">国家石油公司</text>
+</g>
+<!-- L_corp_w -->
+<g id="node35" class="node">
+<title>L_corp_w</title>
+<polygon fill="#4a1a5c" stroke="black" stroke-width="1.5" points="3572,-738.95 3464,-738.95 3464,-702.95 3572,-702.95 3572,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="3518" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">西方油企</text>
+</g>
+<!-- L_choke -->
+<g id="node36" class="node">
+<title>L_choke</title>
+<polygon fill="#1a5c5c" stroke="black" stroke-width="1.5" points="3730,-738.95 3622,-738.95 3622,-702.95 3730,-702.95 3730,-738.95"/>
+<text xml:space="preserve" text-anchor="middle" x="3676" y="-719.15" font-family="Arial" font-size="9.00" fill="#ffffff">战略通道</text>
+</g>
+<!-- LH -->
+<g id="node37" class="node">
+<title>LH</title>
+<polygon fill="#ddffdd" stroke="black" stroke-width="2.5" points="3888,-740.15 3780,-740.15 3780,-701.75 3888,-701.75 3888,-740.15"/>
+<text xml:space="preserve" text-anchor="middle" x="3834" y="-724.4" font-family="Arial" font-size="9.00" fill="#333333">HIGH</text>
+<text xml:space="preserve" text-anchor="middle" x="3834" y="-713.9" font-family="Arial" font-size="9.00" fill="#333333">3+来源交叉验证</text>
+</g>
+<!-- LM -->
+<g id="node38" class="node">
+<title>LM</title>
+<polygon fill="#ddddff" stroke="black" stroke-width="1.5" points="3836,-599.25 3728,-599.25 3728,-560.85 3836,-560.85 3836,-599.25"/>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-583.5" font-family="Arial" font-size="9.00" fill="#333333">MED</text>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-573" font-family="Arial" font-size="9.00" fill="#333333">2个独立来源</text>
+</g>
+<!-- LH&#45;&gt;LM -->
+<g id="edge51" class="edge">
+<title>LH&#45;&gt;LM</title>
+<path fill="none" stroke="#cc2222" stroke-width="2.5" d="M3808,-700.76C3808,-700.76 3808,-610.53 3808,-610.53"/>
+<polygon fill="#cc2222" stroke="#cc2222" stroke-width="2.5" points="3810.45,-610.53 3808,-603.53 3805.55,-610.53 3810.45,-610.53"/>
+<text xml:space="preserve" text-anchor="middle" x="3777.62" y="-659.77" font-family="Arial" font-size="7.50" fill="#cc2222">HIGH边(红实线粗)</text>
+</g>
+<!-- LL -->
+<g id="node39" class="node">
+<title>LL</title>
+<polygon fill="#ffeecc" stroke="black" stroke-width="1.2" stroke-dasharray="5,2" points="3836,-458.35 3728,-458.35 3728,-419.95 3836,-419.95 3836,-458.35"/>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-442.6" font-family="Arial" font-size="9.00" fill="#333333">LOW</text>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-432.1" font-family="Arial" font-size="9.00" fill="#333333">1个来源/有偏差</text>
+</g>
+<!-- LM&#45;&gt;LL -->
+<g id="edge52" class="edge">
+<title>LM&#45;&gt;LL</title>
+<path fill="none" stroke="#1a5296" stroke-width="1.5" d="M3782,-560.16C3782,-560.16 3782,-468.21 3782,-468.21"/>
+<polygon fill="#1a5296" stroke="#1a5296" stroke-width="1.5" points="3784.45,-468.21 3782,-461.21 3779.55,-468.21 3784.45,-468.21"/>
+<text xml:space="preserve" text-anchor="middle" x="3756.5" y="-518.31" font-family="Arial" font-size="7.50" fill="#1a5296">MED边(蓝实线)</text>
+</g>
+<!-- LI -->
+<g id="node40" class="node">
+<title>LI</title>
+<polygon fill="#ffdddd" stroke="black" stroke-width="0.8" stroke-dasharray="1,5" points="3836,-317.45 3728,-317.45 3728,-279.05 3836,-279.05 3836,-317.45"/>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-301.7" font-family="Arial" font-size="9.00" fill="#333333">INFERRED</text>
+<text xml:space="preserve" text-anchor="middle" x="3782" y="-291.2" font-family="Arial" font-size="9.00" fill="#333333">行为模式推断</text>
+</g>
+<!-- LL&#45;&gt;LI -->
+<g id="edge53" class="edge">
+<title>LL&#45;&gt;LI</title>
+<path fill="none" stroke="#888888" stroke-dasharray="5,2" d="M3782,-419.56C3782,-419.56 3782,-326.19 3782,-326.19"/>
+<polygon fill="#888888" stroke="#888888" points="3784.45,-326.19 3782,-319.19 3779.55,-326.19 3784.45,-326.19"/>
+<text xml:space="preserve" text-anchor="middle" x="3756.12" y="-377" font-family="Arial" font-size="7.50" fill="#888888">LOW边(灰虚线)</text>
+</g>
+<!-- LI&#45;&gt;LH -->
+<g id="edge54" class="edge">
+<title>LI&#45;&gt;LH</title>
+<path fill="none" stroke="#aaaaaa" stroke-width="0.7" stroke-dasharray="1,5" d="M3836.25,-298C3850.51,-298 3862,-298 3862,-298 3862,-298 3862,-692.49 3862,-692.49"/>
+<polygon fill="#aaaaaa" stroke="#aaaaaa" stroke-width="0.7" points="3859.55,-692.49 3862,-699.49 3864.45,-692.49 3859.55,-692.49"/>
+<text xml:space="preserve" text-anchor="middle" x="3833.12" y="-486.49" font-family="Arial" font-size="7.50" fill="#aaaaaa">INFERRED(点线)</text>
+</g>
+</g>
+</svg>
+
+  </div>
+  <div id="zoom-controls">
+    <button id="zoom-in" title="放大">＋</button>
+    <div id="zoom-level">100%</div>
+    <button id="zoom-out" title="缩小">－</button>
+    <button id="zoom-fit" title="适应窗口">⊡</button>
+  </div>
+</div>
+
+<!-- ── Right Detail Panel ── -->
+<div id="detail-panel" class="empty">
+  <div id="detail-header">
+    <h2 id="detail-title">点击节点查看详情</h2>
+    <div class="subtitle" id="detail-subtitle">选中任意节点以展示信息</div>
+  </div>
+  <div id="detail-content"></div>
+  <div id="detail-edges"></div>
+</div>
+
+<!-- ── Edge Tooltip ── -->
+<div id="edge-tooltip">
+  <div class="tt-label" id="tt-label"></div>
+  <div class="tt-conf" id="tt-conf"></div>
+  <div class="tt-note" id="tt-note"></div>
+</div>
+
+<script>
+// ── 内嵌 meta 数据 ──
+const META = {
+  "nodes": [
+    {
+      "id": "SA_MBS",
+      "label": "沙特王室\n（MBS派系）\n+ 公共投资基金PIF",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ Vision2030核心；控制Aramco；OPEC实际主导方"
+    },
+    {
+      "id": "SA_ARAMCO",
+      "label": "沙特阿拉伯\n国家石油公司\nAramco",
+      "type": "corp_national",
+      "confidence": "HIGH",
+      "note": "♟ 全球最大石油公司；估值最高时超2万亿美元"
+    },
+    {
+      "id": "UAE_MBZ",
+      "label": "阿联酋\n（MBZ网络）\n+ ADNOC",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 亚伯拉罕协议签署方；主权财富基金ADQ/Mubadala"
+    },
+    {
+      "id": "QA_FUND",
+      "label": "卡塔尔\n（埃米尔派系）\n+ QIA + 半岛电视台",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 全球最大LNG出口国；软实力网络"
+    },
+    {
+      "id": "KW_GOVT",
+      "label": "科威特政府\n+ KPC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ 重要OPEC成员；2020价格战缓冲方"
+    },
+    {
+      "id": "IQ_GOVT",
+      "label": "伊拉克政府\n（巴格达派系）",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ OPEC第二大产油国；受PMF影响严重"
+    },
+    {
+      "id": "IR_SL",
+      "label": "伊朗\n最高领袖办公室\n（哈梅内伊体系）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ IRGC最高指挥权；\"抵抗轴心\"总设计师"
+    },
+    {
+      "id": "IR_IRGC",
+      "label": "伊朗革命卫队\n（IRGC）\n+ 圣城军Quds Force",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 经济帝国+代理战争调度器；控制Khatam al-Anbiya"
+    },
+    {
+      "id": "HOUTHI",
+      "label": "也门胡塞武装\n（安萨尔真主）",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 控制曼德海峡；2023-2025红海袭击"
+    },
+    {
+      "id": "PMF_IQ",
+      "label": "伊拉克\n人民动员力量PMF\n（亲伊朗派系）",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 控制部分油田和炼油厂；走私网络"
+    },
+    {
+      "id": "HEZBOLLAH",
+      "label": "黎巴嫩真主党\n+ Al-Amana能源网络",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 伊朗石油黎巴嫩中转；年收入约$7亿（美估值）"
+    },
+    {
+      "id": "RU_KREMLIN",
+      "label": "俄罗斯\n（克宫能源外交）\n+ Rosneft",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ OPEC+共同主导方；制裁后重组出口路线"
+    },
+    {
+      "id": "US_SHALE",
+      "label": "美国\n页岩油集团\n（德州-华盛顿轴）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 2019成全球最大产油国；IEA主要推力"
+    },
+    {
+      "id": "US_CENTCOM",
+      "label": "美国中央司令部\n（CENTCOM）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 波斯湾军事保护伞；第5舰队巴林"
+    },
+    {
+      "id": "CN_NOC",
+      "label": "中国国家石油企业\n中石油/中石化/中海油",
+      "type": "corp_national",
+      "confidence": "HIGH",
+      "note": "♟ 中东第一大石油买家；BRI能源投资2024达$390亿"
+    },
+    {
+      "id": "IL_GOVT",
+      "label": "以色列政府\n（内塔尼亚胡派系）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 亚伯拉罕协议；CENTCOM区责；加沙战争后外交搁置"
+    },
+    {
+      "id": "TR_ERDOGAN",
+      "label": "土耳其\n（埃尔多安政府）\n能源枢纽战略",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ Kirkuk-Ceyhan管道；土耳其海峡；BTC管道"
+    },
+    {
+      "id": "OPEC_PLUS",
+      "label": "OPEC+\n多边生产配额机制",
+      "type": "intl_org",
+      "confidence": "HIGH",
+      "note": "♟ 沙俄联合主导；调节全球约40%石油供给"
+    },
+    {
+      "id": "IEA",
+      "label": "国际能源署IEA\n（西方消费国集团）",
+      "type": "intl_org",
+      "confidence": "HIGH",
+      "note": "♟ 全球战略储备协调；与OPEC博弈"
+    },
+    {
+      "id": "MAJORS_W",
+      "label": "西方石油巨头\nExxon/BP/Shell\n/TotalEnergies",
+      "type": "corp_western",
+      "confidence": "HIGH",
+      "note": "♟ 中东开采合同；逐步被国家油企替代"
+    },
+    {
+      "id": "LY_CHAOS",
+      "label": "利比亚\n（碎片化政权）\n+ NOC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ OPEC豁免生产；欧洲主要供应方；2025产量十年高峰"
+    },
+    {
+      "id": "NG_GOVT",
+      "label": "尼日利亚政府\n+ NNPC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ 非洲最大产油国；尼日尔三角洲安全复杂"
+    },
+    {
+      "id": "HORMUZ",
+      "label": "霍尔木兹海峡\n（波斯湾咽喉）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 全球石油流量~21%；伊朗封锁威胁"
+    },
+    {
+      "id": "BAB_MAND",
+      "label": "曼德海峡\n（红海入口）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 胡塞袭击中心；全球贸易~12%绕行"
+    },
+    {
+      "id": "SUEZ",
+      "label": "苏伊士运河\n（埃及控制）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 中东→欧洲最短海路；2021Ever Given事件"
+    },
+    {
+      "id": "BTC_PIPE",
+      "label": "BTC管道\n（巴库-第比利斯-杰伊汉）",
+      "type": "chokepoint",
+      "confidence": "MED",
+      "note": "🚢 里海油绕俄输欧；土耳其通道杠杆"
+    },
+    {
+      "id": "WAHHABISM",
+      "label": "瓦哈比主义\n国家意识形态输出",
+      "type": "ideology",
+      "confidence": "MED",
+      "note": "💡 沙特通过伊斯兰合作组织输出；与伊朗什叶主义竞争"
+    },
+    {
+      "id": "SHIA_CRES",
+      "label": "什叶新月意识形态\n（伊朗版本）",
+      "type": "ideology",
+      "confidence": "MED",
+      "note": "💡 伊拉克→叙利亚→黎巴嫩轴线；抵抗轴心意识形态基础"
+    },
+    {
+      "id": "ARAMCO_HIST",
+      "label": "七姐妹时代\n（美英石油垄断）\n1945-1973背景层",
+      "type": "ideology",
+      "confidence": "HIGH",
+      "note": "📜 历史：西方主导被1973危机打断"
+    },
+    {
+      "id": "OPEC_1973",
+      "label": "OPEC石油禁运\n（1973-1974）\n背景层",
+      "type": "ideology",
+      "confidence": "HIGH",
+      "note": "📜 历史：第一次\"石油武器\"；重塑全球经济秩序"
+    }
+  ],
+  "edges": [
+    {
+      "source": "SA_MBS",
+      "target": "OPEC_PLUS",
+      "label": "领导定价配额",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "RU_KREMLIN",
+      "target": "OPEC_PLUS",
+      "label": "OPEC+共同主导",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "UAE_MBZ",
+      "target": "OPEC_PLUS",
+      "label": "配额参与/分歧",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "QA_FUND",
+      "target": "OPEC_PLUS",
+      "label": "配额参与",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IQ_GOVT",
+      "target": "OPEC_PLUS",
+      "label": "配额(低合规率)",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "OPEC_PLUS",
+      "target": "IEA",
+      "label": "定价博弈",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_SHALE",
+      "target": "IEA",
+      "label": "西方战略储备",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "US_SHALE",
+      "target": "OPEC_PLUS",
+      "label": "市场竞争压力",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "SA_ARAMCO",
+      "label": "国家完全控制",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_ARAMCO",
+      "target": "OPEC_PLUS",
+      "label": "产量数据支撑",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "UAE_MBZ",
+      "target": "SA_ARAMCO",
+      "label": "ADNOC竞争",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "SA_ARAMCO",
+      "label": "石油长约(买方)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "IQ_GOVT",
+      "label": "鲁迈拉油田开采",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "IR_IRGC",
+      "label": "绕制裁购伊朗油",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "IQ_GOVT",
+      "label": "油田服务合同",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "SA_ARAMCO",
+      "label": "技术合作(递减)",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "RU_KREMLIN",
+      "target": "CN_NOC",
+      "label": "制裁后扩大对华出口",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_SL",
+      "target": "IR_IRGC",
+      "label": "最高领袖直接指挥",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HOUTHI",
+      "label": "武器/资金/训练",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "PMF_IQ",
+      "label": "伊朗化伊拉克民兵",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HEZBOLLAH",
+      "label": "$7亿+/年+武器",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "PMF_IQ",
+      "target": "IQ_GOVT",
+      "label": "政治渗透议会/部委",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "PMF_IQ",
+      "target": "SA_ARAMCO",
+      "label": "威胁沙特设施[LOW]",
+      "confidence": "LOW",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "HEZBOLLAH",
+      "target": "IR_IRGC",
+      "label": "伊朗油黎巴嫩分销",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "HOUTHI",
+      "target": "BAB_MAND",
+      "label": "袭击商船(200+次)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "BAB_MAND",
+      "target": "SUEZ",
+      "label": "红海→苏伊士扰动",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "HOUTHI",
+      "label": "军事反制OPG",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "HOUTHI",
+      "label": "也门内战(沙特联军)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HORMUZ",
+      "label": "封锁威胁/骚扰",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "HORMUZ",
+      "label": "护航/海上阻绝",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "TR_ERDOGAN",
+      "target": "SUEZ",
+      "label": "Kirkuk-Ceyhan替代",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "TR_ERDOGAN",
+      "target": "BTC_PIPE",
+      "label": "运营/通道税收",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "BTC_PIPE",
+      "target": "HORMUZ",
+      "label": "里海油绕霍尔木兹替代",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IL_GOVT",
+      "target": "UAE_MBZ",
+      "label": "亚伯拉罕协议",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IL_GOVT",
+      "target": "SA_MBS",
+      "label": "非正式安全协作",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "IL_GOVT",
+      "label": "CENTCOM区责+武器",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IL_GOVT",
+      "label": "正常化谈判搁置",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IR_SL",
+      "label": "2023中调沙伊复交",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IR_IRGC",
+      "label": "也门代理战争对抗",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IR_SL",
+      "target": "QA_FUND",
+      "label": "叙事竞争[INFERRED]",
+      "confidence": "INFERRED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "QA_FUND",
+      "label": "卡塔尔LNG 27年合同",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "UAE_MBZ",
+      "label": "ADNOC投资合作",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "CN_NOC",
+      "label": "人民币结算探索",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "LY_CHAOS",
+      "target": "OPEC_PLUS",
+      "label": "豁免参与",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "NG_GOVT",
+      "target": "OPEC_PLUS",
+      "label": "配额成员",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "LY_CHAOS",
+      "label": "油田开发合同",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "WAHHABISM",
+      "target": "SA_MBS",
+      "label": "意识形态输出",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SHIA_CRES",
+      "target": "IR_IRGC",
+      "label": "抵抗轴心基础",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "OPEC_1973",
+      "target": "OPEC_PLUS",
+      "label": "历史演化",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "ARAMCO_HIST",
+      "target": "SA_ARAMCO",
+      "label": "历史:国有化1988",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    }
+  ]
+};
+
+// ── 数据索引 ──
+const nodeMap = new Map();
+META.nodes.forEach(n => nodeMap.set(n.id, n));
+const edgeList = META.edges;
+
+// ── 构建邻接表 ──
+const adjacency = new Map(); // nodeId -> [{ edge, neighborId }]
+edgeList.forEach(e => {
+  if (!adjacency.has(e.source)) adjacency.set(e.source, []);
+  if (!adjacency.has(e.target)) adjacency.set(e.target, []);
+  adjacency.get(e.source).push({ edge: e, neighborId: e.target });
+  adjacency.get(e.target).push({ edge: e, neighborId: e.source });
+});
+
+// ── DOM 引用 ──
+const container = document.getElementById('svg-container');
+const wrapper   = document.getElementById('svg-wrapper');
+const svgEl     = wrapper.querySelector('svg');
+const detailPanel   = document.getElementById('detail-panel');
+const detailTitle   = document.getElementById('detail-title');
+const detailSub     = document.getElementById('detail-subtitle');
+const detailContent = document.getElementById('detail-content');
+const detailEdges   = document.getElementById('detail-edges');
+const tooltip       = document.getElementById('edge-tooltip');
+
+// ── SVG 元素查找 ──
+function findSvgNode(nodeId) {
+  // Graphviz: <g id="node_N" class="node"><title>nodeId</title>...
+  const titles = svgEl.querySelectorAll('g.node > title');
+  for (const t of titles) {
+    if (t.textContent.trim() === nodeId) return t.parentElement;
+  }
+  return null;
+}
+
+function findSvgEdge(srcId, dstId) {
+  // Graphviz: <g id="edge_N" class="edge"><title>src-&gt;dst</title>...
+  const key1 = srcId + '->' + dstId;
+  const key2 = dstId + '->' + srcId;
+  const titles = svgEl.querySelectorAll('g.edge > title');
+  for (const t of titles) {
+    const txt = t.textContent.trim().replace(/&gt;/g, '>').replace(/&#45;&gt;/g, '->');
+    if (txt === key1 || txt === key2) return t.parentElement;
+  }
+  return null;
+}
+
+// ──────────────────────────────────
+// 缩放 & 平移
+// ──────────────────────────────────
+let scale = 0.35;
+let panX = 50, panY = 50;
+let isPanning = false;
+let startX, startY;
+
+function applyTransform() {
+  wrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+}
+
+// 初始缩放以适应容器
+function fitToView() {
+  const rect = container.getBoundingClientRect();
+  const svgW = svgEl.viewBox?.baseVal?.width  || svgEl.width?.baseVal?.value  || 2000;
+  const svgH = svgEl.viewBox?.baseVal?.height || svgEl.height?.baseVal?.value || 2000;
+  scale = Math.min(rect.width / svgW, rect.height / svgH) * 0.9;
+  panX = (rect.width - svgW * scale) / 2;
+  panY = (rect.height - svgH * scale) / 2;
+  applyTransform();
+}
+
+container.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyTransform();
+});
+window.addEventListener('mouseup', () => { isPanning = false; });
+container.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = container.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const oldScale = scale;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  scale = Math.max(0.05, Math.min(3, scale * delta));
+  panX = mx - (mx - panX) * (scale / oldScale);
+  panY = my - (my - panY) * (scale / oldScale);
+  applyTransform();
+}, { passive: false });
+
+document.getElementById('zoom-in').onclick  = () => { scale = Math.min(3, scale * 1.2); applyTransform(); };
+document.getElementById('zoom-out').onclick = () => { scale = Math.max(0.05, scale / 1.2); applyTransform(); };
+document.getElementById('zoom-fit').onclick = fitToView;
+
+wrapper.style.transformOrigin = '0 0';
+// Remove fixed SVG width/height so transform works cleanly
+svgEl.removeAttribute('width');
+svgEl.removeAttribute('height');
+setTimeout(fitToView, 100);
+
+// ──────────────────────────────────
+// Node Click → Highlight + Detail
+// ──────────────────────────────────
+let selectedNodeId = null;
+
+function clearHighlight() {
+  svgEl.querySelectorAll('.svg-dimmed, .svg-highlighted').forEach(el => {
+    el.classList.remove('svg-dimmed', 'svg-highlighted');
+  });
+  selectedNodeId = null;
+  detailPanel.classList.add('empty');
+  detailTitle.textContent = '点击节点查看详情';
+  detailSub.textContent = '选中任意节点以展示信息';
+  detailContent.innerHTML = '';
+  detailEdges.innerHTML = '';
+}
+
+function highlightNode(nodeId) {
+  if (selectedNodeId === nodeId) { clearHighlight(); return; }
+  selectedNodeId = nodeId;
+  const nodeMeta = nodeMap.get(nodeId);
+  if (!nodeMeta) return;
+
+  // Dim everything
+  svgEl.querySelectorAll('g.node, g.edge').forEach(g => g.classList.add('svg-dimmed'));
+  svgEl.querySelectorAll('g.node, g.edge').forEach(g => g.classList.remove('svg-highlighted'));
+
+  // Highlight this node
+  const thisG = findSvgNode(nodeId);
+  if (thisG) { thisG.classList.remove('svg-dimmed'); thisG.classList.add('svg-highlighted'); }
+
+  // Highlight connected
+  const neighbors = adjacency.get(nodeId) || [];
+  neighbors.forEach(({ edge, neighborId }) => {
+    const nG = findSvgNode(neighborId);
+    if (nG) { nG.classList.remove('svg-dimmed'); nG.classList.add('svg-highlighted'); }
+    const eG = findSvgEdge(edge.source, edge.target);
+    if (eG) { eG.classList.remove('svg-dimmed'); eG.classList.add('svg-highlighted'); }
+  });
+
+  // Fill detail panel
+  detailPanel.classList.remove('empty');
+  detailTitle.textContent = nodeMeta.label.replace(/\n/g, ' ');
+  detailSub.textContent = nodeMeta.id;
+
+  detailContent.innerHTML = `
+    <div class="detail-field">
+      <div class="field-label">类型</div>
+      <div class="field-value"><span class="type-badge type-${nodeMeta.type}">${TYPE_MAP[nodeMeta.type] || nodeMeta.type}</span></div>
+    </div>
+    <div class="detail-field">
+      <div class="field-label">置信度</div>
+      <div class="field-value"><span class="conf-badge conf-${nodeMeta.confidence}">${nodeMeta.confidence}</span></div>
+    </div>
+    <div class="detail-field">
+      <div class="field-label">备注</div>
+      <div class="field-value">${nodeMeta.note || '（无）'}</div>
+    </div>
+  `;
+
+  // Connected edges
+  if (neighbors.length > 0) {
+    let edgeHtml = '<h4>关联关系 (' + neighbors.length + ')</h4>';
+    neighbors.forEach(({ edge, neighborId }) => {
+      const dir = edge.source === nodeId ? '→' : '←';
+      const nLabel = (nodeMap.get(neighborId)?.label || neighborId).replace(/\n/g, ' ');
+      edgeHtml += `
+        <div class="edge-item edge-${edge.confidence}">
+          <span class="edge-target">${dir} ${nLabel}</span><br>
+          <span class="edge-label">${edge.label}</span>
+        </div>`;
+    });
+    detailEdges.innerHTML = edgeHtml;
+  } else {
+    detailEdges.innerHTML = '';
+  }
+}
+
+// Type label map for JS
+const TYPE_MAP = {
+  "state_elite":   "🏛️ 国家精英派系",
+  "militia_proxy": "⚔️ 代理武装",
+  "intl_org":      "🌐 国际组织",
+  "corp_national": "🛢️ 国家石油企业",
+  "corp_western":  "🏭 西方油企",
+  "chokepoint":    "🚢 战略通道",
+  "ideology":      "📜 意识形态/历史",
+};
+
+// Attach click handlers to SVG node groups
+svgEl.querySelectorAll('g.node').forEach(g => {
+  g.style.cursor = 'pointer';
+  g.addEventListener('click', e => {
+    e.stopPropagation();
+    const title = g.querySelector('title');
+    if (title) highlightNode(title.textContent.trim());
+  });
+});
+
+// Click blank to clear
+container.addEventListener('click', e => {
+  if (e.target === container || e.target === wrapper) clearHighlight();
+});
+
+// ──────────────────────────────────
+// Edge Hover → Tooltip
+// ──────────────────────────────────
+svgEl.querySelectorAll('g.edge').forEach(g => {
+  g.style.cursor = 'pointer';
+  g.addEventListener('mouseenter', e => {
+    const title = g.querySelector('title');
+    if (!title) return;
+    const txt = title.textContent.trim();
+    // Parse "src->dst"
+    const parts = txt.split('->');
+    if (parts.length !== 2) return;
+    const [src, dst] = parts;
+    // Find matching edge
+    const edge = edgeList.find(ed =>
+      (ed.source === src && ed.target === dst) ||
+      (ed.source === dst && ed.target === src)
+    );
+    if (!edge) return;
+    document.getElementById('tt-label').textContent = edge.label || '（无标签）';
+    document.getElementById('tt-conf').innerHTML =
+      '<span class="conf-badge conf-' + edge.confidence + '">' + edge.confidence + '</span>';
+    const note = edge.note || '';
+    document.getElementById('tt-note').textContent = note ? '📝 ' + note : '';
+    tooltip.style.display = 'block';
+  });
+  g.addEventListener('mousemove', e => {
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top  = (e.clientY + 15) + 'px';
+  });
+  g.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
+});
+
+// ──────────────────────────────────
+// Filter Panel
+// ──────────────────────────────────
+function applyFilters() {
+  const checkedTypes = new Set(
+    [...document.querySelectorAll('.filter-type:checked')].map(cb => cb.value)
+  );
+  const checkedConfs = new Set(
+    [...document.querySelectorAll('.filter-conf:checked')].map(cb => cb.value)
+  );
+
+  // Determine visible nodes
+  const visibleNodes = new Set();
+  META.nodes.forEach(n => {
+    if (checkedTypes.has(n.type) && checkedConfs.has(n.confidence)) {
+      visibleNodes.add(n.id);
+    }
+  });
+
+  // Show/hide SVG node groups
+  svgEl.querySelectorAll('g.node').forEach(g => {
+    const title = g.querySelector('title');
+    if (!title) return;
+    const id = title.textContent.trim();
+    g.style.display = visibleNodes.has(id) ? '' : 'none';
+  });
+
+  // Show/hide SVG edge groups
+  svgEl.querySelectorAll('g.edge').forEach(g => {
+    const title = g.querySelector('title');
+    if (!title) return;
+    const txt = title.textContent.trim();
+    const parts = txt.split('->');
+    if (parts.length !== 2) return;
+    const [src, dst] = parts;
+    // Edge visible only if both endpoints visible AND edge confidence is checked
+    const edge = edgeList.find(ed =>
+      (ed.source === src && ed.target === dst) ||
+      (ed.source === dst && ed.target === src)
+    );
+    const edgeConf = edge ? edge.confidence : 'HIGH';
+    const show = visibleNodes.has(src) && visibleNodes.has(dst) && checkedConfs.has(edgeConf);
+    g.style.display = show ? '' : 'none';
+  });
+}
+
+document.querySelectorAll('.filter-type, .filter-conf').forEach(cb => {
+  cb.addEventListener('change', applyFilters);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  document.querySelectorAll('.filter-type, .filter-conf').forEach(cb => { cb.checked = true; });
+  applyFilters();
+  clearHighlight();
+});
+
+</script>
+</body>
+</html>

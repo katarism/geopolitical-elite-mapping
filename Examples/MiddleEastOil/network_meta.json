@@ -1,0 +1,616 @@
+{
+  "nodes": [
+    {
+      "id": "SA_MBS",
+      "label": "沙特王室\n（MBS派系）\n+ 公共投资基金PIF",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ Vision2030核心；控制Aramco；OPEC实际主导方"
+    },
+    {
+      "id": "SA_ARAMCO",
+      "label": "沙特阿拉伯\n国家石油公司\nAramco",
+      "type": "corp_national",
+      "confidence": "HIGH",
+      "note": "♟ 全球最大石油公司；估值最高时超2万亿美元"
+    },
+    {
+      "id": "UAE_MBZ",
+      "label": "阿联酋\n（MBZ网络）\n+ ADNOC",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 亚伯拉罕协议签署方；主权财富基金ADQ/Mubadala"
+    },
+    {
+      "id": "QA_FUND",
+      "label": "卡塔尔\n（埃米尔派系）\n+ QIA + 半岛电视台",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 全球最大LNG出口国；软实力网络"
+    },
+    {
+      "id": "KW_GOVT",
+      "label": "科威特政府\n+ KPC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ 重要OPEC成员；2020价格战缓冲方"
+    },
+    {
+      "id": "IQ_GOVT",
+      "label": "伊拉克政府\n（巴格达派系）",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ OPEC第二大产油国；受PMF影响严重"
+    },
+    {
+      "id": "IR_SL",
+      "label": "伊朗\n最高领袖办公室\n（哈梅内伊体系）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ IRGC最高指挥权；\"抵抗轴心\"总设计师"
+    },
+    {
+      "id": "IR_IRGC",
+      "label": "伊朗革命卫队\n（IRGC）\n+ 圣城军Quds Force",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 经济帝国+代理战争调度器；控制Khatam al-Anbiya"
+    },
+    {
+      "id": "HOUTHI",
+      "label": "也门胡塞武装\n（安萨尔真主）",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 控制曼德海峡；2023-2025红海袭击"
+    },
+    {
+      "id": "PMF_IQ",
+      "label": "伊拉克\n人民动员力量PMF\n（亲伊朗派系）",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 控制部分油田和炼油厂；走私网络"
+    },
+    {
+      "id": "HEZBOLLAH",
+      "label": "黎巴嫩真主党\n+ Al-Amana能源网络",
+      "type": "militia_proxy",
+      "confidence": "HIGH",
+      "note": "♟ 伊朗石油黎巴嫩中转；年收入约$7亿（美估值）"
+    },
+    {
+      "id": "RU_KREMLIN",
+      "label": "俄罗斯\n（克宫能源外交）\n+ Rosneft",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ OPEC+共同主导方；制裁后重组出口路线"
+    },
+    {
+      "id": "US_SHALE",
+      "label": "美国\n页岩油集团\n（德州-华盛顿轴）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 2019成全球最大产油国；IEA主要推力"
+    },
+    {
+      "id": "US_CENTCOM",
+      "label": "美国中央司令部\n（CENTCOM）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 波斯湾军事保护伞；第5舰队巴林"
+    },
+    {
+      "id": "CN_NOC",
+      "label": "中国国家石油企业\n中石油/中石化/中海油",
+      "type": "corp_national",
+      "confidence": "HIGH",
+      "note": "♟ 中东第一大石油买家；BRI能源投资2024达$390亿"
+    },
+    {
+      "id": "IL_GOVT",
+      "label": "以色列政府\n（内塔尼亚胡派系）",
+      "type": "state_elite",
+      "confidence": "HIGH",
+      "note": "♟ 亚伯拉罕协议；CENTCOM区责；加沙战争后外交搁置"
+    },
+    {
+      "id": "TR_ERDOGAN",
+      "label": "土耳其\n（埃尔多安政府）\n能源枢纽战略",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ Kirkuk-Ceyhan管道；土耳其海峡；BTC管道"
+    },
+    {
+      "id": "OPEC_PLUS",
+      "label": "OPEC+\n多边生产配额机制",
+      "type": "intl_org",
+      "confidence": "HIGH",
+      "note": "♟ 沙俄联合主导；调节全球约40%石油供给"
+    },
+    {
+      "id": "IEA",
+      "label": "国际能源署IEA\n（西方消费国集团）",
+      "type": "intl_org",
+      "confidence": "HIGH",
+      "note": "♟ 全球战略储备协调；与OPEC博弈"
+    },
+    {
+      "id": "MAJORS_W",
+      "label": "西方石油巨头\nExxon/BP/Shell\n/TotalEnergies",
+      "type": "corp_western",
+      "confidence": "HIGH",
+      "note": "♟ 中东开采合同；逐步被国家油企替代"
+    },
+    {
+      "id": "LY_CHAOS",
+      "label": "利比亚\n（碎片化政权）\n+ NOC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ OPEC豁免生产；欧洲主要供应方；2025产量十年高峰"
+    },
+    {
+      "id": "NG_GOVT",
+      "label": "尼日利亚政府\n+ NNPC",
+      "type": "state_elite",
+      "confidence": "MED",
+      "note": "♟ 非洲最大产油国；尼日尔三角洲安全复杂"
+    },
+    {
+      "id": "HORMUZ",
+      "label": "霍尔木兹海峡\n（波斯湾咽喉）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 全球石油流量~21%；伊朗封锁威胁"
+    },
+    {
+      "id": "BAB_MAND",
+      "label": "曼德海峡\n（红海入口）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 胡塞袭击中心；全球贸易~12%绕行"
+    },
+    {
+      "id": "SUEZ",
+      "label": "苏伊士运河\n（埃及控制）",
+      "type": "chokepoint",
+      "confidence": "HIGH",
+      "note": "🚢 中东→欧洲最短海路；2021Ever Given事件"
+    },
+    {
+      "id": "BTC_PIPE",
+      "label": "BTC管道\n（巴库-第比利斯-杰伊汉）",
+      "type": "chokepoint",
+      "confidence": "MED",
+      "note": "🚢 里海油绕俄输欧；土耳其通道杠杆"
+    },
+    {
+      "id": "WAHHABISM",
+      "label": "瓦哈比主义\n国家意识形态输出",
+      "type": "ideology",
+      "confidence": "MED",
+      "note": "💡 沙特通过伊斯兰合作组织输出；与伊朗什叶主义竞争"
+    },
+    {
+      "id": "SHIA_CRES",
+      "label": "什叶新月意识形态\n（伊朗版本）",
+      "type": "ideology",
+      "confidence": "MED",
+      "note": "💡 伊拉克→叙利亚→黎巴嫩轴线；抵抗轴心意识形态基础"
+    },
+    {
+      "id": "ARAMCO_HIST",
+      "label": "七姐妹时代\n（美英石油垄断）\n1945-1973背景层",
+      "type": "ideology",
+      "confidence": "HIGH",
+      "note": "📜 历史：西方主导被1973危机打断"
+    },
+    {
+      "id": "OPEC_1973",
+      "label": "OPEC石油禁运\n（1973-1974）\n背景层",
+      "type": "ideology",
+      "confidence": "HIGH",
+      "note": "📜 历史：第一次\"石油武器\"；重塑全球经济秩序"
+    }
+  ],
+  "edges": [
+    {
+      "source": "SA_MBS",
+      "target": "OPEC_PLUS",
+      "label": "领导定价配额",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "RU_KREMLIN",
+      "target": "OPEC_PLUS",
+      "label": "OPEC+共同主导",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "UAE_MBZ",
+      "target": "OPEC_PLUS",
+      "label": "配额参与/分歧",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "QA_FUND",
+      "target": "OPEC_PLUS",
+      "label": "配额参与",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IQ_GOVT",
+      "target": "OPEC_PLUS",
+      "label": "配额(低合规率)",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "OPEC_PLUS",
+      "target": "IEA",
+      "label": "定价博弈",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_SHALE",
+      "target": "IEA",
+      "label": "西方战略储备",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "US_SHALE",
+      "target": "OPEC_PLUS",
+      "label": "市场竞争压力",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "SA_ARAMCO",
+      "label": "国家完全控制",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_ARAMCO",
+      "target": "OPEC_PLUS",
+      "label": "产量数据支撑",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "UAE_MBZ",
+      "target": "SA_ARAMCO",
+      "label": "ADNOC竞争",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "SA_ARAMCO",
+      "label": "石油长约(买方)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "IQ_GOVT",
+      "label": "鲁迈拉油田开采",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "IR_IRGC",
+      "label": "绕制裁购伊朗油",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "IQ_GOVT",
+      "label": "油田服务合同",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "SA_ARAMCO",
+      "label": "技术合作(递减)",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "RU_KREMLIN",
+      "target": "CN_NOC",
+      "label": "制裁后扩大对华出口",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_SL",
+      "target": "IR_IRGC",
+      "label": "最高领袖直接指挥",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HOUTHI",
+      "label": "武器/资金/训练",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "PMF_IQ",
+      "label": "伊朗化伊拉克民兵",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HEZBOLLAH",
+      "label": "$7亿+/年+武器",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "PMF_IQ",
+      "target": "IQ_GOVT",
+      "label": "政治渗透议会/部委",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "PMF_IQ",
+      "target": "SA_ARAMCO",
+      "label": "威胁沙特设施[LOW]",
+      "confidence": "LOW",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "HEZBOLLAH",
+      "target": "IR_IRGC",
+      "label": "伊朗油黎巴嫩分销",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "HOUTHI",
+      "target": "BAB_MAND",
+      "label": "袭击商船(200+次)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "BAB_MAND",
+      "target": "SUEZ",
+      "label": "红海→苏伊士扰动",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "HOUTHI",
+      "label": "军事反制OPG",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "HOUTHI",
+      "label": "也门内战(沙特联军)",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "IR_IRGC",
+      "target": "HORMUZ",
+      "label": "封锁威胁/骚扰",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "HORMUZ",
+      "label": "护航/海上阻绝",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "TR_ERDOGAN",
+      "target": "SUEZ",
+      "label": "Kirkuk-Ceyhan替代",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "TR_ERDOGAN",
+      "target": "BTC_PIPE",
+      "label": "运营/通道税收",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "BTC_PIPE",
+      "target": "HORMUZ",
+      "label": "里海油绕霍尔木兹替代",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IL_GOVT",
+      "target": "UAE_MBZ",
+      "label": "亚伯拉罕协议",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IL_GOVT",
+      "target": "SA_MBS",
+      "label": "非正式安全协作",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "US_CENTCOM",
+      "target": "IL_GOVT",
+      "label": "CENTCOM区责+武器",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IL_GOVT",
+      "label": "正常化谈判搁置",
+      "confidence": "MED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IR_SL",
+      "label": "2023中调沙伊复交",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "IR_IRGC",
+      "label": "也门代理战争对抗",
+      "confidence": "HIGH",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "IR_SL",
+      "target": "QA_FUND",
+      "label": "叙事竞争[INFERRED]",
+      "confidence": "INFERRED",
+      "direction": "both",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "QA_FUND",
+      "label": "卡塔尔LNG 27年合同",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "CN_NOC",
+      "target": "UAE_MBZ",
+      "label": "ADNOC投资合作",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SA_MBS",
+      "target": "CN_NOC",
+      "label": "人民币结算探索",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "LY_CHAOS",
+      "target": "OPEC_PLUS",
+      "label": "豁免参与",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "NG_GOVT",
+      "target": "OPEC_PLUS",
+      "label": "配额成员",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "MAJORS_W",
+      "target": "LY_CHAOS",
+      "label": "油田开发合同",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "WAHHABISM",
+      "target": "SA_MBS",
+      "label": "意识形态输出",
+      "confidence": "MED",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "SHIA_CRES",
+      "target": "IR_IRGC",
+      "label": "抵抗轴心基础",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "OPEC_1973",
+      "target": "OPEC_PLUS",
+      "label": "历史演化",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    },
+    {
+      "source": "ARAMCO_HIST",
+      "target": "SA_ARAMCO",
+      "label": "历史:国有化1988",
+      "confidence": "HIGH",
+      "direction": "forward",
+      "note": ""
+    }
+  ]
+}

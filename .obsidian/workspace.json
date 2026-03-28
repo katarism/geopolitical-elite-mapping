@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MiddleEastOil_EliteNetwork_Report.md",
+                "file": "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md",
                 "mode": "source",
                 "source": false
               },
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MiddleEastOil_EliteNetwork_Report.md",
+                "file": "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +113,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MiddleEastOil_EliteNetwork_Report.md",
+                "file": "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -156,7 +156,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MiddleEastOil_EliteNetwork_Report.md",
+                "file": "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -184,5 +184,21 @@
     }
   },
   "active": "74631e0354fe5b8e",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork.svg",
+    "MiddleEastOil_EliteNetwork_Viewer.html",
+    "MiddleEastOil_EliteNetwork.svg",
+    "MiddleEastOil_EliteNetwork",
+    "README.md",
+    "Examples/MiddleEastOil/EliteNetwork_Viewer.html",
+    "MiddleEastOil_EliteNetwork_Report.md",
+    "Examples/MiddleEastOil/network_meta.json",
+    "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Viewer.html",
+    "Examples/MiddleEastOil/MiddleEastOil_EliteNetwork_Report.md",
+    "Examples/MiddleEastOil",
+    "Examples",
+    "EliteNetwork_Viewer.html",
+    "cytoscape.min.js",
+    "viewer_template.html"
+  ]
 }
