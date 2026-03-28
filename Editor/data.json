@@ -550,16 +550,6 @@
       ],
       "user_note": "",
       "suspected": false
-    },
-    {
-      "id": "test",
-      "label": "test",
-      "type": "state_elite",
-      "confidence": "HIGH",
-      "note": "",
-      "era": [],
-      "user_note": "",
-      "suspected": false
     }
   ],
   "edges": [
