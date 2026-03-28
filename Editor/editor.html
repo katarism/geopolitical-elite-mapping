@@ -2,9 +2,17 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Elite Network Editor</title>
-<script src="../cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js" crossorigin="anonymous"></script>
+<script>
+// Fallback to local copy if CDN fails (e.g. offline development)
+if(typeof cytoscape==='undefined'){
+  var s=document.createElement('script');
+  s.src='../cytoscape.min.js';
+  document.head.appendChild(s);
+}
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -202,10 +210,20 @@ textarea.paste-area:focus{border-color:var(--accent)}
   #modeView span:last-child{display:none}
   #modeEdit span:last-child{display:none}
 
+  /* Push topbar below iOS status bar using safe area inset */
+  #topBar{
+    padding-top:env(safe-area-inset-top);
+    height:calc(36px + env(safe-area-inset-top));
+  }
+  /* Push setup overlay card below status bar */
+  .setup-card{margin-top:env(safe-area-inset-top)}
+
   /* Left panel → fixed slide-in drawer from left */
   .panel-left{
     position:fixed;
-    left:0;top:36px;bottom:0;
+    left:0;
+    top:calc(36px + env(safe-area-inset-top));
+    bottom:0;
     z-index:500;
     transform:translateX(-100%);
     transition:transform .25s ease;
@@ -217,7 +235,9 @@ textarea.paste-area:focus{border-color:var(--accent)}
   /* Right panel → fixed slide-in drawer from right */
   .panel-right{
     position:fixed;
-    right:0;top:36px;bottom:0;
+    right:0;
+    top:calc(36px + env(safe-area-inset-top));
+    bottom:0;
     z-index:500;
     transform:translateX(100%);
     transition:transform .25s ease;
@@ -225,6 +245,9 @@ textarea.paste-area:focus{border-color:var(--accent)}
     box-shadow:-4px 0 24px rgba(0,0,0,0.6);
   }
   .panel-right.mob-open{transform:translateX(0)}
+
+  /* Backdrop also starts below status bar */
+  .mob-backdrop{top:calc(36px + env(safe-area-inset-top))}
 
   /* Canvas fills full width on mobile */
   #mainEditor{position:relative}
@@ -239,8 +262,8 @@ textarea.paste-area:focus{border-color:var(--accent)}
     padding:4px 8px;
   }
 
-  /* Zoom controls: smaller on mobile */
-  .zoom-btn{width:36px;height:36px}
+  /* Zoom controls: larger touch targets on mobile */
+  .zoom-btn{width:40px;height:40px;font-size:18px}
 
   /* Toast: avoid overlap with browser nav bar */
   .toast{bottom:72px}
@@ -861,6 +884,11 @@ function build(data){
   buildPathQuery();
   setupZoom();
   setupExportMenu();
+  // On mobile the panels are position:fixed (out of flow), so Cytoscape
+  // needs an explicit resize after the layout settles to fill the full width.
+  if(isMobile()){
+    requestAnimationFrame(function(){ _cyResize(); });
+  }
 }
 
 /* ── Node click: highlight ── */
@@ -1943,7 +1971,15 @@ window.m2DeleteEdge=function(ele){
 // ── Mobile Panel Drawers ──────────────────────────────
 function isMobile(){ return window.innerWidth < 768; }
 
-function toggleMobPanel(side){
+function _cyResize(){
+  // Tell Cytoscape to recalculate canvas dimensions after layout shift
+  if(window.cy && typeof window.cy.resize==='function'){
+    window.cy.resize();
+    window.cy.fit();
+  }
+}
+
+window.toggleMobPanel=function(side){
   if(!isMobile()) return;
   const left=document.getElementById('panelLeft');
   const right=document.getElementById('panelRight');
@@ -1953,7 +1989,7 @@ function toggleMobPanel(side){
 
   if(side==='left'){
     const opening=!left.classList.contains('mob-open');
-    closeMobPanels();
+    window.closeMobPanels();
     if(opening){
       left.classList.add('mob-open');
       backdrop.classList.add('show');
@@ -1961,16 +1997,16 @@ function toggleMobPanel(side){
     }
   } else {
     const opening=!right.classList.contains('mob-open');
-    closeMobPanels();
+    window.closeMobPanels();
     if(opening){
       right.classList.add('mob-open');
       backdrop.classList.add('show');
       if(rightBtn) rightBtn.classList.add('active');
     }
   }
-}
+};
 
-function closeMobPanels(){
+window.closeMobPanels=function(){
   const left=document.getElementById('panelLeft');
   const right=document.getElementById('panelRight');
   const backdrop=document.getElementById('mobBackdrop');
@@ -1981,7 +2017,7 @@ function closeMobPanels(){
   if(backdrop) backdrop.classList.remove('show');
   if(leftBtn) leftBtn.classList.remove('active');
   if(rightBtn) rightBtn.classList.remove('active');
-}
+};
 
 // Switch hint text based on device type
 function updateCanvasHint(){
@@ -2014,8 +2050,9 @@ window._mobAutoOpenRight = function(){
 };
 
 window.addEventListener('resize', function(){
-  if(!isMobile()) closeMobPanels();
+  if(!isMobile()) window.closeMobPanels();
   updateCanvasHint();
+  _cyResize();
 });
 window.addEventListener('DOMContentLoaded', updateCanvasHint);
 // Also run immediately in case DOM is already ready
