@@ -1234,7 +1234,7 @@ function buildPathQuery(){
     path.forEach(el=>{
       el.removeClass('dimmed').addClass('highlighted');
       if(el.isNode()){
-        el.style({'background-color':'#ffffff','border-color':'#facc15','border-width':3});
+        el.style({'background-color':'#ffffff','border-color':'#facc15','border-width':3,'color':'#111111'});
         const p=el.parent();if(p.length)p.removeClass('dimmed').addClass('highlighted');
       }
       if(el.isEdge()){
