@@ -49,6 +49,12 @@ _agent/
 /tmp/
 
 Editor/EliteNetworkEditor_PRD.md
+Editor/.puppeteer_tests/
+Editor/generate_icon.py
+Editor/icon-philosophy.md
+
+# Icon files
+Editor/AppIcon-*.png
 
 # Generated outputs (optional, keep Examples but ignore loose outputs in root)
 # Add specific patterns if you want to keep the root clean
