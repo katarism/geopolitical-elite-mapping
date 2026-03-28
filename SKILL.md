@@ -361,7 +361,9 @@ description: "地缘政治精英网络图谱工具。适用于分析特定议题
    - 多源验证率
    - 平均置信度
 
-**Phase 5 交付物**：文字分析报告（含置信度审计 + 关系验证表 + 局限性声明）。
+**Phase 5 交付物**：
+- `output/[Topic]_EliteNetwork_Viewer.html` — 交互式图谱查看器（Phase 4 生成，Phase 5 最终确认）
+- `output/[Topic]_EliteNetwork_Report.md` — 文字分析报告（含置信度审计 + 关系验证表 + 局限性声明）
 
 ---
 
