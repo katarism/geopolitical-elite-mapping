@@ -21,6 +21,7 @@
 
 <!-- TODO: 添加图谱截图或 GIF 演示 -->
 <!-- ![图谱预览](docs/assets/preview.png) -->
+<img width="1429" height="665" alt="Screenshot 2026-03-28 at 21 50 54" src="https://github.com/user-attachments/assets/6dd00815-90cf-45c9-8316-01543ec6684d" />
 
 ## 目录
 
