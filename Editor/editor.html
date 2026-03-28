@@ -1425,7 +1425,7 @@ window.m3ApplySuspectedStyle=applySuspectedStyle;
 .m2c-title{font-size:13px;font-weight:600;margin-bottom:8px}
 .m2c-msg{font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;white-space:pre-line}
 .m2c-btns{display:flex;gap:8px;justify-content:flex-end}
-body.edge-pick, body.edge-pick #cy {cursor:crosshair!important}
+body.edge-pick, body.edge-pick * {cursor:crosshair!important}
 body.edge-pick .canvas-wrap::after{content:'点击目标节点创建连线 (Esc 取消)';position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,.88);color:#fff;padding:5px 14px;border-radius:20px;font-size:10px;pointer-events:none;z-index:100;white-space:nowrap}
 </style>
 
@@ -1496,18 +1496,20 @@ window.onDataLoaded=function(data){
 /* ── Cy tap binding (双击 + edge pick 统一处理) ── */
 function bindCy(mode){
   const cy=window.cy;if(!cy)return;
-  cy.off('.m2');
+  try { cy.off('tap.m2'); cy.off('.m2'); } catch(e) {}
   if(mode!=='edit')return;
 
   cy.on('tap.m2',function(evt){
     const t=evt.target;
     // ── Edge pick mode ──
     if(_pickSrc){
-      if(t===cy){ cancelPick(); return; }
+      if(t===cy){ toast('未选中目标，请点击目标节点或按 Esc 注销','warn'); return; }
       if(t.isNode && t.isNode() && !t.data('isGroup')){
         const tid=t.id();
-        if(tid===_pickSrc){ toast('请选择不同的目标节点','err'); return; }
+        if(tid===_pickSrc){ toast('不能直连自己，请选择不同的目标节点','err'); return; }
         const src=_pickSrc; cancelPick(); doAddEdge(src,tid);
+      } else {
+        toast('请点击目标节点','warn');
       }
       return;
     }
@@ -1562,11 +1564,23 @@ document.addEventListener('keydown',function(e){
 
 /* ── Modal ── */
 let _onOk=null;
-function openModal(title,bodyEl,okLabel,onOk){
+function openModal(title,bodyEl,okLabel,onOk,optDel){
   $i('m2Title').textContent=title;
   const b=$i('m2Body');b.textContent='';b.appendChild(bodyEl);
   $i('m2Ok').textContent=okLabel||'确认';
   _onOk=onOk;
+  
+  const f=$i('m2Cancel').parentNode;
+  f.querySelectorAll('.m2-del-btn').forEach(n=>n.remove());
+  if(optDel){
+    const db=document.createElement('button');
+    db.className='btn m2-del-btn';
+    db.style.cssText='background:var(--danger);color:#fff;margin-right:auto';
+    db.textContent='🗑️ 删除';
+    db.onclick=()=>{ closeModal(); optDel(); };
+    f.insertBefore(db, f.firstChild);
+  }
+
   $i('m2Modal').classList.remove('hidden');
   setTimeout(()=>{const f=b.querySelector('input:not(:disabled),select,textarea');if(f)f.focus();},50);
 }
@@ -1813,6 +1827,8 @@ window.m2EditEdge=function(ele){
       ele.data({label:v.label,labelFlat:flat,confidence:v.conf,direction:v.dir,era:v.era});
     }
     window.editorState.markDirty();closeModal();toast('✅ 连线已更新','ok');
+  }, function() {
+    window.m2DeleteEdge(ele);
   });
 };
 
