@@ -92,7 +92,23 @@ AI 生成的图谱是起点，而非终点。编辑器让您将其转化为**持
 ### 开始使用
 
 1. **获取 Token**：前往 [GitHub Token 申请页](https://github.com/settings/tokens?type=beta)，创建一个 `Fine-grained Token`（需勾选 `Contents: Read and Write` 权限）。
-2. **打开并工作**：在文件浏览器（macOS 用 Finder，Windows 用文件资源管理器）中双击 `Editor/editor.html`，浏览器将自动打开该文件，输入 Token 和仓库名，导入 Agentic Workflow 生成的 `[Topic]_EliteNetwork_Viewer.html` 即可开始。
+
+**方式一：本地打开（桌面端）**
+
+在文件浏览器（macOS 用 Finder，Windows 用文件资源管理器）中双击 `Editor/editor.html`，浏览器将自动打开，输入 Token 和仓库名，导入 Agentic Workflow 生成的 `[Topic]_EliteNetwork_Viewer.html` 即可开始。
+
+**方式二：GitHub Pages 托管（推荐，支持移动端）**
+
+本地直接打开 HTML 文件在移动端无法渲染（iOS/Android 浏览器不支持 `file://` 协议加载本地资源）。推荐将编辑器托管到 GitHub Pages，获得可在任何设备访问的稳定链接：
+
+1. 在 GitHub 上新建一个 **public 仓库**（例如命名为 `gem-editor`）
+2. 将 `Editor/editor.html` 上传至该仓库根目录
+3. 进入仓库 **Settings → Pages**，Source 选择 `Deploy from a branch`，Branch 选 `main`，目录选 `/ (root)`，保存
+4. 稍等片刻，编辑器即可通过以下地址访问：
+   ```
+   https://[你的用户名].github.io/gem-editor/editor.html
+   ```
+5. 将此链接添加到手机主屏幕，即可像 App 一样随时打开使用
 
 ## 项目结构
 
