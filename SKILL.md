@@ -262,46 +262,45 @@ description: "地缘政治精英网络图谱工具。适用于分析特定议题
 
 **目的**：将图数据转化为高质量、带置信度视觉编码的交互式 HTML 图谱查看器。
 
-**技术方案**：使用 Python `graphviz` 库构建图结构，通过 `export_html()` 注入 `viewer_template.html` 生成 Cytoscape.js 查看器。
-
-> ⚠️ **前置依赖**：系统需安装 Graphviz。Python 库：`pip install graphviz`。
+**技术方案**：在 `generate_elite_network.py` 中用 Python 数据结构定义节点、边、阵营、纪元，调用 `export_html()` 将数据注入 `viewer_template.html`，生成纯前端可交互的 Cytoscape.js 查看器。无需安装 Graphviz 或任何额外依赖。
 
 **步骤**：
 
-1. 创建 `generate_elite_network.py`，使用 `graphviz.Digraph(engine='dot')` 构建图结构
+1. **创建/更新 `generate_elite_network.py`**，定义以下数据结构：
+   - `NODES`：节点列表，每个节点含 `id`、`label`、`type`、`group`、`confidence`、`era`、`desc` 等字段
+   - `EDGES`：边列表，每条边含 `source`、`target`、`rel`、`label`、`confidence`、`era` 等字段
+   - `GROUPS`：阵营列表（势力框），含 `id`、`label`、`color` 字段
+   - `ERAS`：纪元列表，含 `id`、`label`、`range`、`desc` 字段
 
-2. 图谱全局设置：白底 + 深色文字，`rankdir: TB`，`dpi: 150`，`fontname: Arial`（确保中英文兼容）
+2. **置信度视觉编码** ⚠️（核心差异点）— 严格遵守 [confidence_spec.md](references/confidence_spec.md) + [visual_spec.md](references/visual_spec.md)：
 
-3. **置信度视觉编码** ⚠️（核心差异点）— 严格遵守 [confidence_spec.md](references/confidence_spec.md) + [visual_spec.md](references/visual_spec.md)：
+   置信度通过节点/边的 `confidence` 字段传入，由 `viewer_template.html` 的 Cytoscape.js 样式自动渲染：
 
    **节点边框置信度编码**：
-   | 置信度 | 边框样式 | penwidth | 效果 |
+   | 置信度 | 边框样式 | 边框宽度 | 效果 |
    |--------|---------|----------|------|
-   | HIGH | `solid` 实线 | `2.5` | 粗实线边框，传达高确定性 |
-   | MED | `solid` 实线 | `1.5` | 中等实线边框 |
-   | LOW | `dashed` 虚线 | `1.2` | 虚线边框，提示不确定性 |
-   | INFERRED | `dotted` 点线 | `1.0` | 点线边框，提示推断性 |
+   | HIGH | 实线 | 粗 | 传达高确定性 |
+   | MED | 实线 | 中等 | 中等确定性 |
+   | LOW | 虚线 | 细 | 提示不确定性 |
+   | INFERRED | 点线 | 极细 | 明确标注为推断 |
 
    **边置信度编码**：
-   | 置信度 | 线型 | penwidth | 效果 |
-   |--------|------|----------|------|
-   | HIGH | `solid` 实线 | `2.5` | 粗实线，传达高确定性 |
-   | MED | `solid` 实线 | `1.5` | 中等实线 |
-   | LOW | `dashed` 虚线 | `1.0` | 虚线，提示不确定性 |
-   | INFERRED | `dotted` 点线 | `0.7` | 极细点线，明确标注为推断 |
+   | 置信度 | 线型 | 线宽 | 效果 |
+   |--------|------|------|------|
+   | HIGH | 实线 | 粗 | 传达高确定性 |
+   | MED | 实线 | 中等 | 中等确定性 |
+   | LOW | 虚线 | 细 | 提示不确定性 |
+   | INFERRED | 点线 | 极细 | 明确标注为推断 |
 
-4. 节点配色、边样式 — 严格遵守 [visual_spec.md](references/visual_spec.md) 和 [data_schema.md](references/data_schema.md)
+3. **节点配色、边样式** — 严格遵守 [visual_spec.md](references/visual_spec.md) 和 [data_schema.md](references/data_schema.md)
 
-5. **布局约束** — 严格遵守 [visual_spec.md 布局约束规范](references/visual_spec.md#布局约束规范layout-constraints)
+4. **调用 `export_html()`** 生成查看器：
+   ```python
+   export_html(nodes=NODES, edges=EDGES, groups=GROUPS, eras=ERAS,
+               title="议题名称", output_path="output/[Topic]_EliteNetwork_Viewer.html")
+   ```
 
-6. **Legend 子图**（必须包含）：
-   - 所有节点类型 + 颜色含义
-   - ⚠️ **置信度图例**（必须包含）：展示 HIGH/MED/LOW/INFERRED 的视觉编码样例
-   - 主边 vs 注释层的区分说明
-
-7. **时间轴锚定**：左侧时间轴 + `rank=same` 约束
-
-8. **布局验证** — 生成查看器后按 [调试 checklist](references/visual_spec.md#6-调试-checklist) 检查
+5. **布局验证** — 生成查看器后按 [调试 checklist](references/visual_spec.md#6-调试-checklist) 检查
 
 **Phase 4 交付物**：`output/[Topic]_EliteNetwork_Viewer.html` 交互式查看器 + 生成脚本。
    - 由 `export_html()` 自动生成，内置纪元筛选器 + 时间线控件
@@ -371,7 +370,6 @@ description: "地缘政治精英网络图谱工具。适用于分析特定议题
 | 技能 | 用途 | 必需 |
 |------|------|------|
 | `tavily-search` | **首选搜索**：环境缺失则降级为 `search_web` | 可选（有 fallback） |
-| `graphviz` (系统+Python库) | **Phase 4 图结构构建**：dot 引擎定义节点/边布局，输出交互式 HTML 查看器 | ⚠️ 必需 |
 
 ### 辅助脚本
 
