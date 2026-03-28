@@ -70,10 +70,10 @@ select:focus{border-color:var(--accent)}
   <h3>📐 布局</h3>
   <div class="filter-group">
     <select id="layoutSelect">
+      <option value="grid">网格 (grid)</option>
       <option value="cose">力导向 (cose)</option>
       <option value="circle">环形 (circle)</option>
       <option value="breadthfirst">层次 (breadthfirst)</option>
-      <option value="grid">网格 (grid)</option>
     </select>
   </div>
 </div>
@@ -210,10 +210,7 @@ const cy = cytoscape({
     {selector:"node.highlighted[!isGroup]", style:{"border-color":"#f59e0b","border-width":3.5}},
     {selector:"edge.highlighted", style:{"opacity":1,"z-index":999}}
   ],
-  layout:{name:"cose", animate:true, animationDuration:800,
-    nodeRepulsion:function(){return 6000}, idealEdgeLength:function(){return 80},
-    gravity:0.8, nestingFactor:1.2, padding:30, nodeOverlap:20,
-    numIter:2000, initialTemp:300},
+  layout:{name:"grid", animate:true, animationDuration:800, padding:30},
   minZoom:0.1, maxZoom:5, wheelSensitivity:0.25
 });
 
