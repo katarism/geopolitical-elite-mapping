@@ -32,6 +32,9 @@ wheels/
 *.swp
 *.swo
 
+# Local docs
+docs/
+
 # Project-specific
 .obsidian/
 .gemini/
