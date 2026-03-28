@@ -96,8 +96,7 @@ geopolitical-elite-mapping/
 ├── index.html                         # 项目主页 / 查看器入口
 ├── cytoscape.min.js                   # Cytoscape.js 图形库（已打包）
 ├── Editor/
-│   ├── editor.html                    # 可视化编辑器（纯前端单文件应用）
-│   └── EliteNetworkEditor_PRD.md      # 编辑器产品需求文档
+│   └── editor.html                    # 可视化编辑器（纯前端单文件应用）
 ├── Examples/
 │   └── MiddleEastOil/                 # 中东石油政治案例（报告 + 查看器）
 ├── references/                        # 规范文档
