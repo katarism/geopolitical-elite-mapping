@@ -1768,29 +1768,29 @@ function buildEdgeForm(ed,srcId,tgtId,isEdit){
     const sTitle=mk('div');sTitle.style.cssText='font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;';
     sTitle.textContent='从：'+((srcN&&(srcN.label||srcN.id))||srcId).replace(/\n/g,' ');
     const search=mk('input','m2-inp');search.id='m2eTgtFilter';search.placeholder='🔍 搜索节点...';search.style.marginBottom='6px';
-    const selEl=mk('select','m2-sel');selEl.id='m2eTgtSel';selEl.size=5;selEl.style.height='110px';
-    
+    const selEl=mk('select','m2-sel');selEl.id='m2eTgtSel';
+
     const nodes=data.nodes.filter(n=>n.id!==srcId&&n.type!=='timeline');
-    nodes.forEach(n=>{
+    // Store all nodes for re-filtering (iOS ignores option display:none)
+    const allOpts=nodes.map(n=>{
       const opt=mk('option');opt.value=n.id;
       opt.textContent=(n.label||n.id).replace(/\n/g,' ');
-      opt.dataset.searchText=opt.textContent.toLowerCase()+' '+n.id.toLowerCase();
-      selEl.appendChild(opt);
+      opt._searchText=opt.textContent.toLowerCase()+' '+n.id.toLowerCase();
+      return opt;
     });
-    
-    search.oninput=()=>{
-      const v=search.value.toLowerCase().trim();
-      let firstVis=null;
-      Array.from(selEl.options).forEach(opt=>{
-        if(opt.dataset.searchText.includes(v)){
-          opt.style.display=''; if(!firstVis)firstVis=opt;
-        }else{
-          opt.style.display='none'; opt.selected=false;
-        }
-      });
-      if(firstVis&&!selEl.value)firstVis.selected=true;
-    };
-    if(selEl.options.length>0)selEl.options[0].selected=true;
+
+    function rebuildOpts(filter){
+      const prev=selEl.value;
+      selEl.textContent='';
+      const filtered=filter?allOpts.filter(o=>o._searchText.includes(filter)):allOpts;
+      filtered.forEach(o=>selEl.appendChild(o));
+      // Preserve selection if still visible, else select first
+      if(filtered.some(o=>o.value===prev)) selEl.value=prev;
+      else if(filtered.length>0) filtered[0].selected=true;
+    }
+
+    search.oninput=()=>rebuildOpts(search.value.toLowerCase().trim());
+    rebuildOpts('');
     wrap.append(sTitle,search,selEl);
     c.appendChild(row('连接至 (目标) *',wrap));
   }
