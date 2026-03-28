@@ -29,10 +29,15 @@
 
 ### 开始编辑：您需要准备什么？
 1. **准备底包数据**: 无论是修正错漏，还是从零开始捏造，您都需要先运行一下主目录下的 `generate_elite_network.py` ，提取它生成的 `Viewer.html` 文件或 `data.json` 作为基座。
-2. **打开编辑器**: 双击使用现代浏览器打开 `Editor/editor.html`（纯前端 HTML 组件，**永远离线，保护数据隐私**）。
-3. **导入并开工**:
-   - 界面启动后会要求您导入初始数据。您可以直接将 Python 生成的 `Viewer.html`、或是之前的 `data.json` 丢入解析框中。
-   - 编辑到一半不想干了？点击右上角的 **“📥 导出为 JSON”**。下次打开编辑器时把导出的 JSON 喂回去，无缝接续工作！
+2. **准备 Git 仓库 (云储存)**: 编辑器利用 GitHub API 实现了数据的无缝云端存储与同步。您**必须准备一个 GitHub 仓库**（推荐 Private 项目以保护隐私）。
+   - 为最大程度降低 Token 泄露风险，强烈建议您前往 GitHub Developer Settings 申请 **Fine-grained personal access token**，避免使用范围过大的 Classic Token。
+   - 配置该 Token 时，在 **Repository access** 选项卡下选择 `Only select repositories`，并**仅指定**您用于存放数据的目标仓库。
+   - 在 **Permissions -> Repository permissions** 层级中，找到 **Contents** 权限并将其设置为 `Access: Read and write`。其余所有权限均不需要。
+3. **打开编辑器**: 双击使用现代浏览器打开 `Editor/editor.html`（纯前端 HTML 组件，通信直连 GitHub API，**绝无第三方服务端拦截，保护您的研究隐私**）。
+4. **绑定与开工**:
+   - 界面启动后会要求您配置上述您的 GitHub Token、首选数据仓库 (如 `owner/repo-name`) 以及想存放的 Case 子目录名称。
+   - 随后按提示导入初始数据。您可以直接将 Python 生成的 `Viewer.html`、或是之前的 `data.json` 丢入解析框中。
+   - 每次点击右上角的 **“💾 保存”**，您的改动将自动作为 commit 发送到您的 GitHub 个人私有仓库中！无需再忍受本地文件的散乱。同时支持随时导出本地 JSON 备份。
 
 ---
 
