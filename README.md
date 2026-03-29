@@ -33,7 +33,7 @@
 
 <img width="1439" height="658" alt="Screenshot 2026-03-29 at 11 00 41" src="https://github.com/user-attachments/assets/02bc98d1-7164-4e5a-9e43-5e1c12508656" />
 
-*可搜索两个节点间的最短路径*
+*可搜索两个节点间的最短路径，发现隐藏关系*
 
 
 ## 目录
