@@ -1,4 +1,4 @@
-# Geopolitical Key Actors Network Mapping
+# Geopolitical Network Mapping+Note taking
 
 *An AI-powered platform for analyzing and visualizing geopolitical power networks*
 

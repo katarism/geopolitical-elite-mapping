@@ -1,4 +1,4 @@
-# 地缘政治关系图谱工具 (Geopolitical Network Mapping)
+# 可编辑地缘政治关系图谱工具 (Geopolitical Network Mapping)
 
 [English](README.en.md)
 
