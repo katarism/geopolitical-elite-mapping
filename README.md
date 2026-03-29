@@ -48,13 +48,13 @@
 | 依赖 | 用途 | 安装方式 |
 |------|------|----------|
 | Python 3.8+ | 图谱生成脚本 | [python.org](https://www.python.org/) |
-| AI IDE（推荐） | 运行 Agentic Workflow | [Cursor](https://www.cursor.com/) / Gravity |
+| AI IDE（推荐） | 运行 Agentic Workflow | [Cursor](https://www.cursor.com/) / Google Antigravity |
 
 > **注**：可视化编辑器（`Editor/editor.html`）无需上述依赖，直接在浏览器中打开即可使用。
 
 ## 模块一：AI 自动化建模 (Agentic Workflow)
 
-基于本项目内置的 `SKILL.md` 实现的端到端生成流程，推荐配合 **Cursor** 或 **Gravity** 等 AI IDE 使用。
+基于本项目内置的 `SKILL.md` 实现的端到端生成流程，推荐配合 **Cursor** 或 **Google Antigravity** 等 AI IDE 使用。
 
 ### 快速开始
 
@@ -64,7 +64,7 @@
    cd geopolitical-elite-mapping
    ```
 
-2. **在 AI IDE 中打开仓库**：使用 Cursor 或 Gravity 打开该文件夹。
+2. **在 AI IDE 中打开仓库**：使用 Cursor (用终端载入claude code或使用cursor内置coding agent)或 Google Antigravity 打开该文件夹。
 
 3. **向 AI 提问**：输入一个地缘政治议题关键词，AI 将自动完成以下 6 个阶段：
 
