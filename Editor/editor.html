@@ -1978,7 +1978,8 @@ window.m2EditEdge=function(ele){
   const ed=data.edges.find(e=>e._eid===ele.id());if(!ed)return;
   const d=ele.data();
   openModal('编辑连线',buildEdgeForm(ed,d.source,d.target,true),'保存',function(){
-    const v=getEdgeVals();
+    const v=getEdgeVals(true);
+    if(!v)return;
     pushU();
     Object.assign(ed,{label:v.label,confidence:v.conf,direction:v.dir,era:v.era});
     const cy=window.cy;
