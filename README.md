@@ -28,9 +28,12 @@
 
 **模块二：可视化编辑器**
 <img width="1419" height="650" alt="交互式可视化编辑器界面，支持节点增删、连线管理与备注编辑，并可通过 Git 仓库云端保存修改" src="https://github.com/user-attachments/assets/4a8ef27e-135d-4ae6-bb76-9a85a2d7fde9" />
+
+*交互式可视化编辑器界面，支持节点增删、连线管理与备注编辑，并可通过 Git 仓库云端保存修改*
+
 <img width="1439" height="658" alt="Screenshot 2026-03-29 at 11 00 41" src="https://github.com/user-attachments/assets/02bc98d1-7164-4e5a-9e43-5e1c12508656" />
 
-*交互式可视化编辑器界面，支持节点增删、连线管理与备注编辑，可以搜索两个节点间的最短路径。并可通过 Git 仓库云端保存修改*
+*可搜索两个节点间的最短路径*
 
 
 ## 目录
