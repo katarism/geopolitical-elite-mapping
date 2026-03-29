@@ -1,4 +1,4 @@
-# 地缘政治关键团体网络图谱工具 (Geopolitical Key Actors Network Mapping)
+# 地缘政治关系图谱工具 (Geopolitical Network Mapping)
 
 [English](README.en.md)
 
